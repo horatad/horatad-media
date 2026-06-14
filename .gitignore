@@ -1,0 +1,39 @@
+# === horatad-media .gitignore ===
+# เก็บ source Remotion (epicycle/src) — กัน node_modules, installer, วิดีโอ render (อยู่ Drive แล้ว)
+
+# --- deps ---
+node_modules/
+**/node_modules/
+
+# --- epicycle/ = git repo แยกของตัวเอง (มี history เอง) → backup เป็น repo ของตัวเอง ไม่ฝังเป็น submodule พังใน parent ---
+epicycle/
+
+# --- build / render output ---
+out/
+build/
+dist/
+clips/
+FB-output/
+
+# --- rendered media (final clips เก็บใน Google Drive _FB&Social แล้ว ไม่ต้องใส่ repo) ---
+*.mp4
+*.mov
+*.webm
+*.mkv
+
+# --- installers ---
+*.exe
+*.msi
+
+# --- bundled 3rd-party tools (reinstallable binaries + Java runtime, ไม่ใช่ source) ---
+tools/AudiverisExtract/
+tools/fluidsynth/
+*.jar
+
+# --- logs / temp / machine-local ---
+*.log
+.claude/settings.local.json
+Thumbs.db
+desktop.ini
+.DS_Store
+~$*

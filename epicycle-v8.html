@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="th"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Simplified Ptolemaic Geocentric Model · Horatad</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;600;700&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#010814;--panel:#070d1f;--border:rgba(120,150,255,0.12);
+  --gold:#c8a96e;--dim:#334;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:#ccd;font-family:'Noto Sans Thai',sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;user-select:none}
+canvas{flex:1;width:100%;display:block;touch-action:none;cursor:crosshair}
+
+/* ── TOP BAR ─────────────────────────────────────────────── */
+#hdr{
+  min-height:44px;padding:4px 14px;
+  display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;
+  background:rgba(1,5,20,0.85);border-bottom:1px solid var(--border);
+  backdrop-filter:blur(12px);flex-shrink:0;
+}
+.title{font-family:'Cinzel',serif;font-size:13px;letter-spacing:2px;color:var(--gold);white-space:nowrap}
+.ctrl-row{display:flex;align-items:center;gap:5px;flex-wrap:nowrap}
+.sep{width:1px;height:18px;background:var(--border);flex-shrink:0}
+
+/* planet toggle pills */
+.pl-btn{
+  width:28px;height:28px;border-radius:50%;cursor:pointer;border:1.5px solid;
+  font-family:'Noto Sans Thai',sans-serif;font-size:13px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;
+}
+.pl-btn.off{background:rgba(255,255,255,0.03);color:#444;border-color:#333}
+
+/* icon buttons */
+.ic-btn{
+  padding:4px 9px;border-radius:5px;cursor:pointer;
+  font-family:'Noto Sans Thai',sans-serif;font-size:10px;
+  border:1px solid var(--border);background:rgba(255,255,255,0.04);
+  color:#556;transition:all .15s;white-space:nowrap;
+}
+.ic-btn.on{background:rgba(90,130,255,0.2);color:#99c4ff;border-color:rgba(90,130,255,0.35)}
+.ic-btn.play{background:rgba(80,200,120,0.15);color:#7cf5a8;border-color:rgba(80,200,120,0.3);min-width:34px}
+
+input[type=range]{
+  -webkit-appearance:none;height:3px;border-radius:2px;
+  background:rgba(255,255,255,0.12);cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;margin-top:-4.5px}
+
+/* ── BOTTOM STATUS BAR ───────────────────────────────────── */
+#bar{
+  height:54px;padding:0 10px;flex-shrink:0;
+  display:flex;align-items:center;gap:6px;
+  background:rgba(1,5,20,0.9);border-top:1px solid var(--border);
+  backdrop-filter:blur(12px);overflow-x:auto;overflow-y:hidden;
+}
+.pcard{
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  min-width:58px;padding:4px 6px;border-radius:7px;
+  border:1px solid transparent;transition:all .3s;flex-shrink:0;cursor:default;
+}
+.pcard.retro{border-color:rgba(255,100,100,0.35);background:rgba(255,60,60,0.06);animation:retroPulse 2s ease-in-out infinite}
+@keyframes retroPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,80,80,0)}50%{box-shadow:0 0 8px 2px rgba(255,80,80,0.2)}}
+.pcard-top{display:flex;align-items:center;gap:4px}
+.pcard-sym{font-size:14px;font-weight:700;line-height:1}
+.pcard-name{font-size:8px;color:#556;line-height:1}
+.pcard-sign{font-size:9px;color:#889;line-height:1;letter-spacing:.5px}
+.pcard-status{font-size:8.5px;font-weight:600;line-height:1}
+.pcard-status.r{color:#ff7070}
+.pcard-status.p{color:#556}
+.dist-bar{width:44px;height:2px;border-radius:1px;background:#1a2030;overflow:hidden}
+.dist-fill{height:100%;border-radius:1px;transition:width .5s}
+
+/* ── RETROGRADE ANNOUNCE ─────────────────────────────────── */
+#announce{
+  position:fixed;top:52px;left:50%;transform:translateX(-50%);
+  pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:4px;z-index:10;
+}
+.ann-chip{
+  padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;
+  backdrop-filter:blur(8px);border:1px solid;white-space:nowrap;
+  animation:chipIn .4s ease-out;
+}
+@keyframes chipIn{from{opacity:0;transform:translateY(-8px) scale(.9)}to{opacity:1;transform:none}}
+
+/* ── LABEL OVERLAY ───────────────────────────────────────── */
+#labels{position:absolute;top:44px;left:0;right:0;bottom:54px;pointer-events:none;overflow:hidden}
+.lbl{position:absolute;font-size:9px;color:rgba(255,255,255,0.38);letter-spacing:.5px;transform:translate(-50%,-50%);white-space:nowrap}
+</style>
+</head><body>
+
+<div id="hdr">
+  <div class="title" style="font-size:11px;line-height:1.3;max-width:280px"><div style="font-size:12px;letter-spacing:1.5px">PTOLEMAIC GEOCENTRIC MODEL</div><div style="font-size:9px;color:rgba(200,169,110,0.6);letter-spacing:0.5px;font-family:'Noto Sans Thai',sans-serif">based on Almagest (~150 AD) · Horatad · 1 Jun 2026</div></div>
+  <div class="ctrl-row" style="flex-wrap:wrap;gap:4px">
+    <!-- Planet toggles -->
+    <div id="planets" class="ctrl-row" style="gap:3px"></div>
+    <div class="sep"></div>
+    <!-- Display -->
+    <button class="ic-btn" id="bView" onclick="cycleView()" style="min-width:72px">— ไม่แสดง</button>
+    <div class="sep"></div>
+    <button class="ic-btn" id="bMode" onclick="cycleMode()" style="font-size:10px;white-space:nowrap">🌌 ทั้งหมด</button>
+    <div class="sep"></div>
+    <!-- Playback -->
+    <button class="ic-btn play" id="bPause" onclick="togglePause()">⏸</button>
+    <button class="ic-btn" onclick="doReset()">↺</button>
+    <div class="sep"></div>
+    <!-- Speed + inner zoom -->
+    <div class="ctrl-row" style="gap:3px">
+      <span style="font-size:8px;color:#445">วงใน</span>
+      <input type="range" id="izR" min="1" max="2.5" step="0.1" value="1" style="width:42px;accent-color:#ff8844"
+        oninput="innerZ=parseFloat(this.value)">
+      <div class="sep"></div>
+      <span style="font-size:8px;color:#445">เร็ว</span>
+      <input type="range" id="spdR" min="0.1" max="20" step="0.1" value="2" style="width:50px;accent-color:#7b44b0"
+        oninput="spd=parseFloat(this.value);document.getElementById('spdL').textContent=spd.toFixed(1)+'×'">
+      <span id="spdL" style="font-size:9px;color:#CCB0FF;min-width:22px">2.0×</span>
+    </div>
+    <div class="sep"></div>
+    <!-- Outer planet epiR sliders -->
+    <div class="ctrl-row" style="gap:5px">
+      <div class="ctrl-row" style="gap:2px" title="อังคาร epicycle">
+        <span style="font-size:11px;font-weight:700;color:#FF7799">๓</span>
+        <input type="range" id="r3" min="20" max="90" step="1" value="69" style="width:55px;accent-color:#FF7799"
+          oninput="setEpi('mars',+this.value,this)">
+        <span id="l3" style="font-size:9px;color:#FF7799;min-width:38px">69 · 23×</span>
+      </div>
+      <div class="ctrl-row" style="gap:2px" title="พฤหัส epicycle">
+        <span style="font-size:11px;font-weight:700;color:#FFAA44">๕</span>
+        <input type="range" id="r5" min="5" max="80" step="1" value="41" style="width:55px;accent-color:#FFAA44"
+          oninput="setEpi('jupiter',+this.value,this)">
+        <span id="l5" style="font-size:9px;color:#FFAA44;min-width:38px">41 · 2.2×</span>
+      </div>
+      <div class="ctrl-row" style="gap:2px" title="เสาร์ epicycle">
+        <span style="font-size:11px;font-weight:700;color:#CC88FF">๗</span>
+        <input type="range" id="r7" min="5" max="70" step="1" value="31" style="width:55px;accent-color:#CC88FF"
+          oninput="setEpi('saturn',+this.value,this)">
+        <span id="l7" style="font-size:9px;color:#CC88FF;min-width:38px">31 · 1.5×</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="position:relative;flex:1;overflow:hidden">
+  <canvas id="c"></canvas>
+  <div id="labels"></div>
+</div>
+
+<div id="bar"></div>
+
+<script>
+const ZOD_FULL=["เมษ","พฤษภ","มิถุน","กรกฎ","สิงห์","กันย์","ตุลย์","พิจิก","ธนู","มกร","กุมภ์","มีน"];
+const ZOD_SHORT=["เม","พฤ","มถ","กก","สิ","กน","ตล","พจ","ธน","มก","กภ","มน"];
+const SS=0.28,S0=-90;
+const PL=[
+  {id:"moon",   n:"๒",th:"จันทร์", p:"27.32 วัน",col:"#FFE566",glow:"#AA8800",defR:22, epiR:4,  dS:3.743,  eS:0,    sz:3.5, kind:"simple"},
+  {id:"mercury",n:"๔",th:"พุธ",    p:"88 วัน",   col:"#55DD55",glow:"#227722",defR:36, epiR:17, vizR:30, dS:SS,     eS:1.163,sz:3.2, kind:"inner"},
+  {id:"venus",  n:"๖",th:"ศุกร์",  p:"225 วัน",  col:"#55BBFF",glow:"#0055BB",defR:36, epiR:26, vizR:58, dS:SS,     eS:0.455,sz:4,   kind:"inner"},
+  {id:"sun",    n:"๑",th:"อาทิตย์",p:"365 วัน",  col:"#FF5533",glow:"#CC2200",defR:36, epiR:0,  dS:SS,     eS:0,    sz:9,   kind:"simple"},
+  {id:"mars",   n:"๓",th:"อังคาร", p:"687 วัน",  col:"#FF7799",glow:"#AA1144",defR:105,epiR:69, vizR:58, dS:0.14887,eS:0,    sz:4,   kind:"outer"},
+  {id:"jupiter",n:"๕",th:"พฤหัส", p:"11.86 ปี", col:"#FFAA44",glow:"#AA5500",defR:215,epiR:41, vizR:58, dS:0.02361,eS:0,    sz:5.2, kind:"outer"},
+  {id:"saturn", n:"๗",th:"เสาร์",  p:"29.46 ปี", col:"#CC88FF",glow:"#7700CC",defR:287,epiR:31, vizR:58, dS:0.00951,eS:0,    sz:5.2, kind:"outer"},
+];
+
+const tr=d=>d*Math.PI/180;
+const sunA=f=>tr(S0-SS*f);
+function gP(p,f){
+  const sa=sunA(f);let da,ea;
+  if(p.kind==="inner"){da=sa;ea=tr(S0-p.eS*f);}
+  else if(p.kind==="outer"){da=tr(S0-p.dS*f);ea=sa;}
+  else{da=tr(S0-p.dS*f);ea=0;}
+  const dx=p.defR*Math.cos(da),dy=p.defR*Math.sin(da);
+  const ex=p.epiR>0?p.epiR*Math.cos(ea):0,ey=p.epiR>0?p.epiR*Math.sin(ea):0;
+  return{x:dx+ex,y:dy+ey,dx,dy};
+}
+function isRetro(p,f){
+  if(p.kind==="simple")return false;
+  const sa=sunA(f);let rx,ry,vx,vy;
+  if(p.kind==="inner"){
+    const ea=tr(S0-p.eS*f);
+    rx=p.defR*Math.cos(sa)+p.epiR*Math.cos(ea);ry=p.defR*Math.sin(sa)+p.epiR*Math.sin(ea);
+    vx=p.defR*SS*Math.sin(sa)+p.epiR*p.eS*Math.sin(ea);vy=-p.defR*SS*Math.cos(sa)-p.epiR*p.eS*Math.cos(ea);
+  }else{
+    const da=tr(S0-p.dS*f);
+    rx=p.defR*Math.cos(da)+p.epiR*Math.cos(sa);ry=p.defR*Math.sin(da)+p.epiR*Math.sin(sa);
+    vx=p.defR*p.dS*Math.sin(da)+p.epiR*SS*Math.sin(sa);vy=-p.defR*p.dS*Math.cos(da)-p.epiR*SS*Math.cos(sa);
+  }
+  return(rx*vy-ry*vx)>0;
+}
+function orbitPeriod(p){return p.kind==="inner"?360/Math.abs(p.eS-SS):360/p.dS;}
+function getSign(px,py,cx,cy){
+  const deg=Math.atan2(py-cy,px-cx)*180/Math.PI;
+  return ZOD_FULL[Math.floor(((90-deg)%360+360)%360/30)%12];
+}
+function getSignShort(px,py,cx,cy){
+  const deg=Math.atan2(py-cy,px-cx)*180/Math.PI;
+  return ZOD_SHORT[Math.floor(((90-deg)%360+360)%360/30)%12];
+}
+
+// ── Stars ──────────────────────────────────────────────────────────
+const STARS=Array.from({length:280},(_,i)=>({
+  x:Math.random(),y:Math.random(),
+  r:Math.random()<0.05?1.4:Math.random()<0.2?0.9:0.45,
+  a:Math.random()*0.5+0.1,tw:Math.random()*Math.PI*2,sp:Math.random()*0.02+0.01
+}));
+
+// ── State ──────────────────────────────────────────────────────────
+const trails={};PL.forEach(p=>trails[p.id]=[]);
+const trailTick={};PL.forEach(p=>trailTick[p.id]=0);
+const orbitNums={};PL.forEach(p=>orbitNums[p.id]=0);
+let frame=0,spd=5,paused=false,innerZ=1,innerMode=false,modeStage=0,_savedSpd=null;
+let showMech=true,showTrail=false,showZod=true,showEpi=true,viewStage=1;
+const vis={};PL.forEach(p=>vis[p.id]=true);
+const _pr={};// prev retrograde state
+let hov=null,rf=0;
+const retroFrames={}; // how many frames in current retrograde (for display)
+PL.forEach(p=>{retroFrames[p.id]=0;});
+
+// ── Canvas ─────────────────────────────────────────────────────────
+const cv=document.getElementById("c");let W,H,ctx,dpr;
+function resize(){
+  dpr=window.devicePixelRatio||1;
+  const r=cv.getBoundingClientRect();W=r.width;H=r.height;
+  cv.width=W*dpr;cv.height=H*dpr;
+  ctx=cv.getContext("2d");ctx.scale(dpr,dpr);
+}
+window.addEventListener("resize",resize);resize();
+
+// ── Controls ───────────────────────────────────────────────────────
+function setBtn(id,on){const b=document.getElementById(id);if(!b)return;b.classList.toggle("on",on);}
+
+
+
+
+function applyViewStage(){
+  showEpi=false;showTrail=false;
+  const b=document.getElementById("bView");
+  if(viewStage===0){b.textContent="— ไม่แสดง";b.classList.remove("on");}
+  else if(viewStage===1){showEpi=true;b.textContent="⊙ Epicycle";b.classList.add("on");}
+  else{showTrail=true;b.textContent="~ เส้นทาง";b.classList.add("on");}
+}
+function cycleView(){
+  viewStage=(viewStage+1)%3;
+  if(viewStage===2){PL.forEach(p=>{trails[p.id]=[];trailTick[p.id]=0;orbitNums[p.id]=0;});}
+  applyViewStage();
+}
+function updateSpdUI(){
+  document.getElementById("spdR").value=Math.min(20,spd);
+  document.getElementById("spdL").textContent=spd.toFixed(1)+"×";
+}
+function syncPlanetBtns(){
+  PL.forEach(p=>{
+    const b=document.querySelector(`.pl-btn[data-id="${p.id}"]`);
+    if(!b)return;
+    if(vis[p.id]){b.style.background=p.glow+"33";b.style.color=p.col;b.style.borderColor=p.col+"55";b.style.textShadow=`0 0 8px ${p.glow}`;b.style.opacity="1";}
+    else{b.style.background="rgba(20,20,30,0.5)";b.style.color="#3a3a4a";b.style.borderColor="#2a2a3a";b.style.textShadow="none";b.style.opacity="0.45";}
+  });
+}
+function cycleMode(){
+  modeStage=(modeStage+1)%3;
+  const inner=["moon","mercury","venus"];
+  const outer=["mars","jupiter","saturn"];
+  const labels=["🌌 ทั้งหมด","🔭 วงใน","🪐 วงนอก"];
+  // Trails stored in physics coords — no need to force-clear
+  if(modeStage===0){
+    // All planets
+    PL.forEach(p=>{vis[p.id]=true;});
+    innerZ=1; innerMode=false;
+    if(_savedSpd!==null){spd=_savedSpd;_savedSpd=null;updateSpdUI();}
+  } else if(modeStage===1){
+    // Inner only — zoom in, slow down
+    outer.forEach(id=>{vis[id]=false;});
+    inner.forEach(id=>{vis[id]=true;});
+    vis["sun"]=true;
+    innerMode=true;
+    _savedSpd=_savedSpd??spd;
+    const newSpd=Math.max(0.1,Math.round(spd/5*10)/10);
+    spd=newSpd; updateSpdUI();
+  } else {
+    // Outer only — normal zoom, restore speed
+    inner.forEach(id=>{vis[id]=false;});
+    outer.forEach(id=>{vis[id]=true;});
+    vis["sun"]=true;
+    innerZ=1; innerMode=false;
+    if(_savedSpd!==null){spd=_savedSpd;_savedSpd=null;updateSpdUI();}
+  }
+  // Restore view stage without resetting it
+  applyViewStage();
+  // Update mode button
+  const b=document.getElementById("bMode");
+  b.textContent=labels[modeStage];
+  setBtn("bMode",modeStage!==0);
+  syncPlanetBtns();
+}
+
+function togglePause(){paused=!paused;const b=document.getElementById("bPause");b.textContent=paused?"▶":"⏸";b.style.background=paused?"rgba(220,80,80,0.2)":"rgba(80,200,120,0.15)";b.style.color=paused?"#ff9999":"#7cf5a8";}
+function doReset(){frame=0;PL.forEach(p=>{trails[p.id]=[];trailTick[p.id]=0;orbitNums[p.id]=0;retroFrames[p.id]=0;});}
+function setEpi(id,eR,slider){
+  const p=PL.find(x=>x.id===id);p.epiR=eR;
+  const key={mars:"3",jupiter:"5",saturn:"7"}[id];
+  const lbl=document.getElementById("l"+key);
+  if(!lbl)return;
+  const defR=p.defR,retro=eR>0&&(defR-eR)>0;
+  const bright=retro?Math.round((defR+eR)**2/(defR-eR)**2*10)/10:"—";
+  const retroOk=eR*0.28>defR*p.dS;
+  lbl.textContent=`${eR} · ${retro?bright+"×":"—"}`;
+  lbl.style.color=retroOk?slider.style.accentColor:"#ff5555";
+}
+
+// Build planet buttons
+const pDiv=document.getElementById("planets");
+PL.forEach(p=>{
+  const b=document.createElement("div");b.className="pl-btn";b.textContent=p.n;b.dataset.id=p.id;
+  b.style.cssText=`background:${p.glow}33;color:${p.col};border-color:${p.col}55;text-shadow:0 0 8px ${p.glow}`;
+  b.title=p.th;
+  function applyPlBtn(btn,on,planet){
+    if(on){btn.style.background=planet.glow+"33";btn.style.color=planet.col;btn.style.borderColor=planet.col+"55";btn.style.textShadow=`0 0 8px ${planet.glow}`;btn.style.opacity="1";}
+    else{btn.style.background="rgba(20,20,30,0.5)";btn.style.color="#3a3a4a";btn.style.borderColor="#2a2a3a";btn.style.textShadow="none";btn.style.opacity="0.45";}
+  }
+  applyPlBtn(b,true,p);
+  b.onclick=()=>{vis[p.id]=!vis[p.id];trails[p.id]=[];applyPlBtn(b,vis[p.id],p);};
+  pDiv.appendChild(b);
+});
+
+// Build bottom status bar
+const bar=document.getElementById("bar");
+const cards={};
+PL.forEach(p=>{
+  const d=document.createElement("div");d.className="pcard";d.id="card_"+p.id;
+  d.innerHTML=`<div class="pcard-top">
+    <span class="pcard-sym" style="color:${p.col}">${p.n}</span>
+    <span class="pcard-name">${p.th}</span>
+  </div>
+  <span class="pcard-sign" id="sign_${p.id}">—</span>
+  <span class="pcard-status p" id="st_${p.id}">โคจรปกติ</span>
+  <div class="dist-bar"><div class="dist-fill" id="db_${p.id}" style="background:${p.col}"></div></div>`;
+  bar.appendChild(d);cards[p.id]=d;
+});
+
+
+// ── Venus/inner planet phase rendering ────────────────────────────────────
+function drawPhase(ctx, x, y, r, col, glow, litAngle, k, label){
+  // k=0: new (dark), k=0.5: crescent/quarter, k=1: full
+  ctx.save();
+  ctx.translate(x,y); ctx.rotate(litAngle);
+  // clip to disk
+  ctx.beginPath(); ctx.arc(0,0,r+1,0,Math.PI*2); ctx.clip();
+  // dark base
+  ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2);
+  ctx.fillStyle="#06060f"; ctx.fill();
+  // lit portion
+  if(k>0.01){
+    const ex=r*(2*k-1); // terminator ellipse x-radius (-r..+r)
+    ctx.beginPath();
+    ctx.arc(0,0,r,-Math.PI/2,Math.PI/2); // right lit semicircle
+    if(k>=0.5){ // gibbous: terminator curves left
+      ctx.ellipse(0,0,Math.abs(ex),r,0,Math.PI/2,-Math.PI/2,true);
+    } else { // crescent: terminator curves right
+      ctx.ellipse(0,0,Math.abs(ex),r,0,Math.PI/2,-Math.PI/2,false);
+    }
+    ctx.closePath();
+    ctx.shadowColor=glow; ctx.shadowBlur=10;
+    ctx.fillStyle=col; ctx.fill(); ctx.shadowBlur=0;
+  }
+  ctx.restore();
+  // label
+  const ns=Math.max(7,r*1.3);
+  ctx.font=`bold ${ns}px 'Noto Sans Thai',sans-serif`;
+  ctx.textAlign="center"; ctx.textBaseline="middle";
+  ctx.fillStyle=k>0.3?"#fff":"#aaa"; ctx.fillText(label,x,y);
+}
+
+function getPhase(vx,vy,sx,sy,cx,cy){
+  // Vectors from Venus to Earth and to Sun
+  const veX=cx-vx, veY=cy-vy, vsX=sx-vx, vsY=sy-vy;
+  const dve=Math.hypot(veX,veY), dvs=Math.hypot(vsX,vsY);
+  if(dve<0.01||dvs<0.01)return{k:0.5,litAngle:0};
+  const cosA=(veX*vsX+veY*vsY)/(dve*dvs);
+  const k=(1+Math.max(-1,Math.min(1,cosA)))/2;
+  const litAngle=Math.atan2(sy-cy,sx-cx); // lit side faces Sun from Earth POV
+  return{k,litAngle};
+}
+
+// ── Main draw ──────────────────────────────────────────────────────
+function draw(){
+  rf++;
+  ctx.fillStyle=`rgb(1,8,20)`;ctx.fillRect(0,0,W,H);
+  const cx=W/2,cy=H/2,sc=Math.min(W,H)/780,f=frame;
+
+  // Radial vignette
+  const vg=ctx.createRadialGradient(cx,cy,Math.min(W,H)*0.3,cx,cy,Math.min(W,H)*0.72);
+  vg.addColorStop(0,"transparent");vg.addColorStop(1,"rgba(0,0,8,0.55)");
+  ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
+
+  // Stars
+  STARS.forEach(s=>{
+    const twink=0.65+0.35*Math.sin(s.tw+rf*s.sp);
+    ctx.globalAlpha=s.a*twink;
+    ctx.fillStyle=s.r>1?"#fff":"#aac";
+    ctx.beginPath();ctx.arc(s.x*W,s.y*H,s.r,0,Math.PI*2);ctx.fill();
+  });
+  ctx.globalAlpha=1;
+
+  // Zodiac ring
+  if(showZod){
+    const zO=338*sc,zI=316*sc;
+    // Ring fill
+    const ringGrad=ctx.createRadialGradient(cx,cy,zI,cx,cy,zO);
+    ringGrad.addColorStop(0,"rgba(8,12,40,0.75)");ringGrad.addColorStop(1,"rgba(4,6,22,0.9)");
+    ctx.beginPath();ctx.arc(cx,cy,zO,0,Math.PI*2);ctx.arc(cx,cy,zI,0,Math.PI*2);
+    ctx.fillStyle=ringGrad;ctx.fill("evenodd");
+    // Dividers + labels
+    for(let i=0;i<12;i++){
+      const a0=tr(-i*30-90),a1=tr(-(i+1)*30-90),am=(a0+a1)/2;
+      ctx.beginPath();ctx.moveTo(cx+zI*Math.cos(a0),cy+zI*Math.sin(a0));
+      ctx.lineTo(cx+zO*Math.cos(a0),cy+zO*Math.sin(a0));
+      ctx.strokeStyle=`hsl(${240+i*8},40%,28%)`;ctx.lineWidth=0.5;ctx.stroke();
+      const lr=(zI+zO)/2;
+      ctx.save();ctx.translate(cx+lr*Math.cos(am),cy+lr*Math.sin(am));ctx.rotate(am+Math.PI/2);
+      ctx.fillStyle=`hsl(${240+i*8},50%,62%)`;
+      ctx.font=`400 ${Math.max(10,12*sc)}px 'Noto Sans Thai',sans-serif`;
+      ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(ZOD_SHORT[i],0,0);
+      ctx.restore();
+    }
+  }
+
+  // Inner mode: soft reference circle grid
+  if(innerMode){
+    // Reference circles at Sun and Venus max orbit
+    const sunR_d=36*innerZ*sc,venR_d=62*innerZ*sc;
+    ctx.beginPath();ctx.arc(cx,cy,sunR_d,0,Math.PI*2);
+    ctx.strokeStyle="rgba(255,80,50,0.06)";ctx.lineWidth=0.6;ctx.setLineDash([2,6]);ctx.stroke();ctx.setLineDash([]);
+    ctx.beginPath();ctx.arc(cx,cy,venR_d,0,Math.PI*2);
+    ctx.strokeStyle="rgba(80,170,255,0.06)";ctx.lineWidth=0.6;ctx.setLineDash([2,6]);ctx.stroke();ctx.setLineDash([]);
+    // 12 thin spokes
+    for(let i=0;i<12;i++){const a=tr(-i*30-90);ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+venR_d*Math.cos(a),cy+venR_d*Math.sin(a));ctx.strokeStyle="rgba(255,255,255,0.03)";ctx.lineWidth=0.4;ctx.stroke();}
+  }
+
+  // Compute positions
+  // In inner mode: auto-scale so Venus orbit fills screen
+  if(innerMode){
+    const venusMax=62; // Venus max distance from Earth (defR_sun+epiR_venus)
+    innerZ=Math.min(W,H)*0.78/(2*venusMax*sc);
+  }
+  pos={};
+  // Sun position needed for inner planet snap
+  const _sr=gP(PL.find(pl=>pl.id==='sun'),f);
+  const _siz=innerZ;
+  const _sx=cx+_sr.x*sc*_siz, _sy=cy+_sr.y*sc*_siz;
+  PL.forEach(p=>{
+    const r=gP(p,f);
+    const iz=(p.kind==="inner"||p.id==="sun")?innerZ:p.id==="moon"?Math.min(innerZ*0.55+0.45,innerZ):1;
+    const dfx=cx+r.dx*sc*iz, dfy=cy+r.dy*sc*iz;
+    let x=cx+r.x*sc*iz, y=cy+r.y*sc*iz;
+    // Snap to vizR circle edge so planet always sits ON the epicycle circle
+    if(p.vizR&&p.epiR>0){
+      if(p.kind==='outer'){
+        const ang=Math.atan2(y-dfy,x-dfx);
+        x=dfx+p.vizR*sc*iz*Math.cos(ang);
+        y=dfy+p.vizR*sc*iz*Math.sin(ang);
+      } else if(p.kind==='inner'){
+        const ang=Math.atan2(y-_sy,x-_sx);
+        x=_sx+p.vizR*sc*_siz*Math.cos(ang);
+        y=_sy+p.vizR*sc*_siz*Math.sin(ang);
+      }
+    }
+    pos[p.id]={x,y,dfx,dfy};
+  });
+
+  // Saturn-orbit trail reset
+  const satOrbit=Math.floor(PL.find(p=>p.id==="saturn").dS*f/360);
+  if(satOrbit!==orbitNums["saturn"]){PL.forEach(p=>{trails[p.id]=[];trailTick[p.id]=0;});orbitNums["saturn"]=satOrbit;}
+
+  // Trails
+  PL.forEach(p=>{
+    if(!showTrail||!vis[p.id]){trails[p.id]=[];return;}
+    trailTick[p.id]++;
+    const period=orbitPeriod(p),every=Math.max(1,Math.floor(period/1600/Math.max(1,spd)));
+    if(trailTick[p.id]%every===0){
+      // Store in physics units (not screen) so innerZ changes don't misalign trail
+      const r2=gP(p,f);
+      trails[p.id].push({px:r2.x,py:r2.y});
+    }
+  });
+  if(showTrail){
+    PL.filter(p=>vis[p.id]).forEach(p=>{
+      const t=trails[p.id];if(t.length<2)return;
+      const iz=(p.kind==="inner"||p.id==="sun")?innerZ:p.id==="moon"?Math.min(innerZ*0.55+0.45,innerZ):1;
+      ctx.strokeStyle=p.col+"bb";
+      ctx.lineWidth=0.9;
+      ctx.beginPath();
+      ctx.moveTo(cx+t[0].px*sc*iz, cy+t[0].py*sc*iz);
+      for(let i=1;i<t.length;i++){
+        ctx.lineTo(cx+t[i].px*sc*iz, cy+t[i].py*sc*iz);
+      }
+      ctx.stroke();
+    });
+  }
+
+  // Mechanics (deferent + epicycle structure)
+  if(showMech){
+    const sR=PL.find(p=>p.id==="sun").defR*innerZ;
+    ctx.beginPath();ctx.arc(cx,cy,sR*sc,0,Math.PI*2);
+    ctx.strokeStyle="rgba(255,80,50,0.07)";ctx.lineWidth=0.5;ctx.setLineDash([1,5]);ctx.stroke();ctx.setLineDash([]);
+    // Deferent circles
+    PL.filter(p=>vis[p.id]&&p.kind!=="inner").forEach(p=>{
+      const iz2=(p.id==="moon"||p.id==="sun")?innerZ:1;
+      ctx.beginPath();ctx.arc(cx,cy,p.defR*sc*iz2,0,Math.PI*2);
+      ctx.strokeStyle=p.col+"14";ctx.lineWidth=0.4;ctx.setLineDash([2,8]);ctx.stroke();ctx.setLineDash([]);
+    });
+    // Inner planet orbit circles (around Sun)
+    if(vis["sun"]){
+      const sp=pos["sun"];
+      PL.filter(p=>vis[p.id]&&p.kind==="inner").forEach(p=>{
+        ctx.beginPath();ctx.arc(sp.x,sp.y,p.epiR*sc*innerZ,0,Math.PI*2);
+        ctx.strokeStyle=p.col+"18";ctx.lineWidth=0.4;ctx.setLineDash([1.5,6]);ctx.stroke();ctx.setLineDash([]);
+        const{x,y}=pos[p.id];
+        ctx.beginPath();ctx.moveTo(sp.x,sp.y);ctx.lineTo(x,y);
+        ctx.strokeStyle=p.col+"22";ctx.lineWidth=0.35;ctx.stroke();
+      });
+    }
+    // Outer: epicycle + arm
+    PL.filter(p=>vis[p.id]&&p.epiR>0&&p.kind==="outer").forEach(p=>{
+      const{dfx,dfy,x,y}=pos[p.id];
+      ctx.beginPath();ctx.arc(dfx,dfy,(p.vizR||p.epiR)*sc,0,Math.PI*2);
+      ctx.strokeStyle=p.col+"1a";ctx.lineWidth=0.4;ctx.setLineDash([1.5,6]);ctx.stroke();ctx.setLineDash([]);
+      ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(dfx,dfy);
+      ctx.strokeStyle=p.col+"0e";ctx.lineWidth=0.35;ctx.stroke();
+      ctx.beginPath();ctx.moveTo(dfx,dfy);ctx.lineTo(x,y);
+      ctx.strokeStyle=p.col+"22";ctx.lineWidth=0.35;ctx.stroke();
+    });
+  }
+
+  // Epicycle white overlay
+  if(showEpi){
+    // Deferent arms
+    PL.filter(p=>vis[p.id]&&p.kind==="outer").forEach(p=>{
+      const{dfx,dfy}=pos[p.id];
+      ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(dfx,dfy);
+      ctx.strokeStyle="rgba(255,255,255,0.15)";ctx.lineWidth=0.7;ctx.setLineDash([3,5]);ctx.stroke();ctx.setLineDash([]);
+    });
+    // White epicycle circles + arms
+    PL.filter(p=>vis[p.id]&&p.epiR>0).forEach(p=>{
+      const{x,y,dfx,dfy}=pos[p.id];
+      const eR=(p.vizR||p.epiR)*sc;if(eR<1)return;
+      ctx.beginPath();ctx.arc(dfx,dfy,eR,0,Math.PI*2);
+      ctx.strokeStyle="rgba(255,255,255,0.55)";ctx.lineWidth=0.9;ctx.setLineDash([3*sc,3*sc]);ctx.stroke();ctx.setLineDash([]);
+      ctx.beginPath();ctx.moveTo(dfx,dfy);ctx.lineTo(x,y);
+      ctx.strokeStyle="rgba(255,255,255,0.65)";ctx.lineWidth=1;ctx.stroke();
+      // Labels
+      if(sc>0.6){
+        const mx=(dfx+x)/2,my=(dfy+y)/2;
+        ctx.fillStyle="rgba(255,255,255,0.3)";ctx.font=`${Math.max(7,8*sc)}px 'Noto Sans Thai',sans-serif`;
+        ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("epi",mx,my-7*sc);
+      }
+    });
+  }
+
+  // Earth glow
+  const eR=10*sc;
+  const eg=ctx.createRadialGradient(cx,cy,0,cx,cy,eR*2.5);
+  eg.addColorStop(0,"rgba(180,210,255,0.18)");eg.addColorStop(1,"transparent");
+  ctx.beginPath();ctx.arc(cx,cy,eR*2.5,0,Math.PI*2);ctx.fillStyle=eg;ctx.fill();
+  ctx.shadowColor="#aaddff";ctx.shadowBlur=20*sc;
+  ctx.beginPath();ctx.arc(cx,cy,eR,0,Math.PI*2);
+  const eg2=ctx.createRadialGradient(cx,cy,0,cx,cy,eR);
+  eg2.addColorStop(0,"#ffffff");eg2.addColorStop(0.5,"#cce8ff");eg2.addColorStop(1,"#8bbfff");
+  ctx.fillStyle=eg2;ctx.fill();ctx.shadowBlur=0;
+  ctx.fillStyle="rgba(180,210,255,0.7)";
+  ctx.font=`500 ${Math.max(7,8*sc)}px 'Noto Sans Thai',sans-serif`;
+  ctx.textAlign="center";ctx.textBaseline="top";ctx.fillText("โลก",cx,cy+eR+3*sc);
+
+  // Planets — Thai number only, no circles, no phase
+  const eSize=18*sc;
+  PL.filter(p=>vis[p.id]).forEach(p=>{
+    const{x,y}=pos[p.id];const retro=isRetro(p,f);
+    // Retrograde ring
+    if(retro&&p.kind!=="simple"){
+      const pulse=0.5+0.5*Math.sin(rf*0.08);
+      ctx.beginPath();ctx.arc(x,y,eSize*(0.7+pulse*0.15),0,Math.PI*2);
+      ctx.strokeStyle=`rgba(255,80,80,${0.3+pulse*0.2})`;ctx.lineWidth=0.8*sc;
+      ctx.setLineDash([2*sc,2.5*sc]);ctx.stroke();ctx.setLineDash([]);
+    }
+    // Thai number — colored, large
+    ctx.shadowColor=p.glow;ctx.shadowBlur=hov===p.id?20:10;
+    ctx.fillStyle=p.col;
+    ctx.font=`bold ${eSize}px 'Noto Sans Thai',sans-serif`;
+    ctx.textAlign="center";ctx.textBaseline="middle";
+    ctx.fillText(p.n,x,y);
+    ctx.shadowBlur=0;
+    // ℞ symbol
+    if(retro&&p.kind!=="simple"){
+      ctx.font=`${Math.max(9,10*sc)}px serif`;
+      ctx.fillStyle="#ff7070";ctx.textAlign="center";ctx.textBaseline="bottom";
+      ctx.fillText("℞",x,y-eSize*0.9);
+    }
+  });
+  // Tooltip
+  if(hov&&vis[hov]){
+    const pl=PL.find(p=>p.id===hov);const{x,y}=pos[hov];const retro=isRetro(pl,f);
+    const sign=getSign(pos[hov].x,pos[hov].y,cx,cy);
+    const tw=210,th=72;let tx=x+16*sc,ty=y-th/2;
+    if(tx+tw>W-8)tx=x-tw-16*sc;if(ty<8)ty=8;if(ty+th>H-8)ty=H-th-8;
+    ctx.fillStyle="rgba(2,6,18,0.95)";ctx.strokeStyle=pl.col+"66";ctx.lineWidth=1;
+    ctx.beginPath();ctx.roundRect(tx,ty,tw,th,6);ctx.fill();ctx.stroke();
+    ctx.textAlign="left";ctx.textBaseline="top";
+    ctx.fillStyle=pl.col;ctx.font=`700 ${Math.min(12,12*sc)}px 'Noto Sans Thai',sans-serif`;
+    ctx.fillText(`${pl.n} ${pl.th}`,tx+10,ty+10);
+    ctx.fillStyle="#667";ctx.font=`${Math.min(10,10*sc)}px 'Noto Sans Thai',sans-serif`;
+    ctx.fillText(`คาบ: ${pl.p}  ·  ราศี${sign}`,tx+10,ty+28);
+    ctx.fillStyle=retro?"#ff8888":pl.col+"99";
+    ctx.fillText(pl.kind==="simple"?"→ โคจรปกติ":retro?`℞ ถอยหลัง (${Math.round(retroFrames[pl.id]*0.284)} วัน)`:"→ โคจรปกติ",tx+10,ty+44);
+    if(pl.kind==="outer"&&pl.epiR>0&&pl.defR>pl.epiR){
+      const br=Math.round((pl.defR+pl.epiR)**2/(pl.defR-pl.epiR)**2*10)/10;
+      const rv=pl.epiR*0.28>pl.defR*pl.dS;
+      ctx.fillStyle="#445";ctx.font=`${Math.min(9,9*sc)}px 'Noto Sans Thai',sans-serif`;
+      ctx.fillText(`epiR=${pl.epiR}  brightness ${br}×  ${rv?"℞✓":"ไม่มี℞"}`,tx+10,ty+58);
+    }
+  }
+
+  // ── Canvas headline ────────────────────────────────────────────
+  ctx.textAlign="center";
+  ctx.fillStyle="#e8d08a";
+  ctx.font=`600 ${Math.max(11,13*sc)}px 'Cinzel','Georgia',serif`;
+  ctx.fillText("Simplified Ptolemaic Geocentric Model",cx,Math.max(28,30*sc));
+  ctx.fillStyle="rgba(255,255,255,0.8)";
+  ctx.font=`400 ${Math.max(8,9*sc)}px 'Noto Sans Thai',sans-serif`;
+  ctx.fillText("based on Almagest (~150 AD)  ·  visualized by Horatad  ·  1 Jun 2026",cx,Math.max(44,46*sc));
+
+  // ── Update bottom bar ──────────────────────────────────────────
+  PL.forEach(p=>{
+    if(!vis[p.id])return;
+    const{x,y}=pos[p.id];const retro=p.kind!=="simple"&&isRetro(p,f);
+    const card=document.getElementById("card_"+p.id);
+    const stEl=document.getElementById("st_"+p.id);
+    const signEl=document.getElementById("sign_"+p.id);
+    const dbEl=document.getElementById("db_"+p.id);
+    if(!card)return;
+    card.classList.toggle("retro",retro);
+    signEl.textContent="ราศี"+getSignShort(x,y,cx,cy);
+    stEl.textContent=p.kind==="simple"?"—":retro?"℞ ถอยหลัง":"โคจรปกติ";
+    stEl.className="pcard-status "+(retro?"r":"p");
+    // Distance bar (normalized)
+    const d=Math.hypot(x-cx,y-cy);
+    const dmin=(p.defR-p.epiR)*sc,dmax=(p.defR+p.epiR)*sc;
+    const pct=dmax>dmin?Math.round((d-dmin)/(dmax-dmin)*100):50;
+    dbEl.style.width=Math.max(5,Math.min(100,100-pct))+"%";
+  });
+
+  if(!paused)frame+=spd;
+  requestAnimationFrame(draw);
+}
+draw();
+
+// Mouse / Touch
+cv.addEventListener("mousemove",e=>{
+  const rect=cv.getBoundingClientRect(),mx=e.clientX-rect.left,my=e.clientY-rect.top;
+  hov=null;
+  for(const p of PL){if(!vis[p.id])continue;const pp=pos[p.id];if(pp&&Math.hypot(mx-pp.x,my-pp.y)<24){hov=p.id;break;}}
+  cv.style.cursor=hov?"pointer":"crosshair";
+});
+cv.addEventListener("mouseleave",()=>{hov=null;});
+cv.addEventListener("touchstart",e=>{
+  const rect=cv.getBoundingClientRect(),t=e.touches[0],mx=t.clientX-rect.left,my=t.clientY-rect.top;
+  for(const p of PL){if(!vis[p.id])continue;const pp=pos[p.id];if(pp&&Math.hypot(mx-pp.x,my-pp.y)<30){hov=hov===p.id?null:p.id;break;}}
+  e.preventDefault();
+},{passive:false});
+
+// expose pos globally for hover
+</script></body></html>
