@@ -44,8 +44,16 @@ epicycle/skills/
 out/
 build/
 dist/
-clips/
 FB-output/
+
+# --- clips/ = แล็บผลิต BGM (โน้ต/PDF → Audiveris OMR → MIDI → fluidsynth+soundfont → mp3/wav) ---
+# track เฉพาะ source: scripts (.py/.ps1) + MIDI + README · กันไฟล์เสียง/soundfont/OMR intermediate (regenerable หรืออยู่ Drive _BGM-lab)
+clips/*
+!clips/*.py
+!clips/*.ps1
+!clips/*.bat
+!clips/*.mid
+!clips/README.md
 
 # --- rendered media (final clips เก็บใน Google Drive _FB&Social แล้ว ไม่ต้องใส่ repo) ---
 *.mp4
