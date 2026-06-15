@@ -1,4 +1,4 @@
-$fs  = "C:\horatad-media\clips\fluidsynth\fluidsynth-v2.5.4-win10-x64-glib\bin\fluidsynth.exe"
+$fs  = "C:\horatad-media\tools\fluidsynth\fluidsynth-v2.5.4-win10-x64-glib\bin\fluidsynth.exe"
 $bin = "C:\Users\user\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.1.1-full_build\bin"
 $mid = "C:\horatad-media\clips\_Valkyries.mid"
 $sfdir = "C:\Users\user\Documents\SoundFonts"

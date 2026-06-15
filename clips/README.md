@@ -27,7 +27,7 @@
 
 ## External deps (ไม่อยู่ใน repo — ติดตั้ง/โหลดเอง)
 - **SoundFonts** → `C:\Users\user\Documents\SoundFonts\` (~1GB: Arachno, FluidR3, GeneralUser GS, MuseScore General, SGM NicePianos, Timbres of Heaven) · โหลดด้วย `_dl_soundfonts.ps1`
-- **fluidsynth** → `clips\fluidsynth\` (+ สำเนาที่ `tools\fluidsynth\`) · gitignored
+- **fluidsynth** → `tools\fluidsynth\` (render scripts `_render_*.ps1` ชี้ที่นี่แล้ว · เดิมมีสำเนาซ้ำใน clips/ ลบทิ้งแล้ว) · gitignored
 - **ffmpeg** → ผ่าน winget (Gyan.FFmpeg)
 - **Audiveris** (OMR) → installer ย้ายไป `C:\Users\user\Downloads\horatad-installers\` · ติดตั้งแล้วใช้ที่ `tools\AudiverisExtract\`
 - **VirtualMIDISynth / MIDIMapper** → installer อยู่ Downloads\horatad-installers เช่นกัน
