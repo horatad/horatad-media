@@ -1,5 +1,10 @@
-import {useCurrentFrame,AbsoluteFill} from 'remotion';
+import {useCurrentFrame,AbsoluteFill,interpolate} from 'remotion';
 import {useRef,useLayoutEffect} from 'react';
+import {Caption} from '../Caption.jsx';
+import {Narration} from '../Narration.jsx';
+import {Music} from '../Music.jsx';
+import {Credit} from '../Credit.jsx';
+import * as timingMerc from '../timing-merc.js';
 
 // ── ดาวพุธพักร (Mercury Retrograde) — เฉลยความเชื่อด้วยกลไกจริง ──
 // โหราศาสตร์: "ดาวพุธพักร / ดาวพุธเสีย" = ดาวเดินถอยหลัง → ลางการสื่อสาร/สัญญา
@@ -8,13 +13,13 @@ import {useRef,useLayoutEffect} from 'react';
 //
 // อัตรา/รัศมี heliocentric-equivalent จาก physics.js:
 //   โลก ∝ SS=0.28 (1 AU) · พุธ ∝ eS=1.163 (0.387 AU) → พุธเร็วกว่าโลก ~4.15 เท่า (คาบ 0.241 ปี)
-const W=1080,H=1920,SPEED=0.95;      // แนวตั้ง 9:16 (YouTube Shorts)
+const W=1080,H=1920,SPEED=0.45;      // แนวตั้ง 9:16 (YouTube Shorts) · ช้าลงให้ retro window ยาวพอครอบช่วงพากย์อธิบาย
 const CX=540,CY=860;                 // diagram กึ่งกลางค่อนบน · เว้นล่างให้ caption
 const AU=210;                       // 1 AU = 210px (วงโคจรพุธเล็ก จึงขยายสเกล)
 const rE=AU, rMe=AU*0.387;          // วงโคจร โลก / พุธ
 const RING=478;                     // แถบดาวฤกษ์ (celestial sphere)
 const wE=0.28, wMe=1.163;           // อัตราเชิงมุม "องศา" ต่อ f-unit (จาก physics.js)
-const PHASE_ME=-150;                // เฟสเริ่มพุธ → inferior conjunction (พักร) ~กลางคลิป
+const PHASE_ME=-357;                // เฟสพุธ → retro window 804–1022 sync กับ seg5–6 (พากย์อธิบายพักร)
 const TR=150;                       // ความยาว trail (เฟรม)
 const tr=d=>d*Math.PI/180;
 
@@ -167,21 +172,11 @@ function draw(canvas,frame){
   ctx.fillStyle='rgba(150,235,150,.6)';ctx.font='400 21px sans-serif';
   ctx.fillText('พุธห่างดวงอาทิตย์ '+elong(f).toFixed(0)+'° (สูงสุด ~28°)',W-44,126);
 
-  // แคปชันล่าง
-  ctx.textAlign='center';
-  if(retro){
-    ctx.fillStyle='#ff6a6a';ctx.font='700 44px sans-serif';
-    ctx.fillText('🔴 ดาวพุธพักร — ถอยหลังในหมู่ดาว',W/2,H-360);
-    ctx.fillStyle='rgba(255,170,170,.92)';ctx.font='600 27px sans-serif';
-    ctx.fillText('พุธวงในแซงโลก (มาอยู่หน้าดวงอาทิตย์) → เราเห็นมันวกถอย',W/2,H-300);
-    ctx.fillStyle='rgba(255,210,210,.85)';ctx.font='500 25px sans-serif';
-    ctx.fillText('= ภาพลวงตาจากมุมมอง · ดาวพุธไม่ได้เดินถอยจริงสักนิด',W/2,H-262);
-  }else{
-    ctx.fillStyle='rgba(150,235,150,.85)';ctx.font='600 28px sans-serif';
-    ctx.fillText('ปกติพุธเดินหน้าในหมู่ดาว (ทิศเดียวกับที่มันโคจรจริง)',W/2,H-320);
-    ctx.fillStyle='rgba(180,210,255,.7)';ctx.font='500 24px sans-serif';
-    ctx.fillText('พุธโคจรเร็วกว่าโลก ~4 เท่า เดี๋ยวจะวิ่งแซงโลก',W/2,H-282);
-  }
+  // badge สถานะพักร/ปกติ (กลางบน ใต้ title) — caption เสียงพากย์อยู่ล่างแล้ว (Caption component)
+  ctx.textAlign='center';ctx.textBaseline='alphabetic';
+  ctx.font='700 40px sans-serif';
+  ctx.fillStyle=retro?'#ff6a6a':'#7be87b';
+  ctx.fillText(retro?'●  ตอนนี้: ดาวพุธพักร — ดูถอยหลัง':'●  ตอนนี้: พุธเดินหน้าปกติ',CX,300);
 }
 
 export function MercuryRetro(){
@@ -191,9 +186,16 @@ export function MercuryRetro(){
     if(!ref.current)return;
     const c=ref.current;c.width=W;c.height=H;draw(c,frame);
   },[frame]);
+  const loopFade=interpolate(frame,[0,15,timingMerc.DURATION-15,timingMerc.DURATION],[0,1,1,0],{extrapolateLeft:'clamp',extrapolateRight:'clamp'});
   return(
     <AbsoluteFill style={{background:'#010814'}}>
-      <canvas ref={ref} style={{width:W,height:H,position:'absolute'}}/>
+      <AbsoluteFill style={{opacity:loopFade}}>
+        <canvas ref={ref} style={{width:W,height:H,position:'absolute'}}/>
+        <Caption timing={timingMerc}/>
+        <Credit timing={timingMerc} label="based on" source="HELIOCENTRIC" sub="Copernicus · 1543"/>
+      </AbsoluteFill>
+      <Narration timing={timingMerc} voDir="vo-merc"/>
+      <Music timing={timingMerc} music="audio/shostakovich-waltz2-loop.wav"/>
     </AbsoluteFill>
   );
 }
