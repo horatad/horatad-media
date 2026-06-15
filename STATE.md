@@ -3,7 +3,11 @@
 > ไฟล์เดียวบอก "โฟลเดอร์นี้คืออะไร ตอนนี้ทำอะไรค้างอยู่" · Claude อ่านก่อนเริ่ม · dashboard ดึง 6 บรรทัดแรก
 > ✓ = ตรวจจริงแล้ว · อัปเดต 2026-06-15 · รายละเอียดเต็ม → `CLAUDE.md` + memory `content-backlog.md`
 
-## ▶ ตอนนี้ (สถานะล่าสุด 15 มิ.ย. 2569)
+## ▶ ตอนนี้ (สถานะล่าสุด 16 มิ.ย. 2569)
+- 🎧 **กำลังจูน: เพลง Shorts60 = Skaters' Waltz (loop seam)** — ค้างที่ **v03** รอพี่เคาะ
+  - bgm `public/audio/skaters-waltz.mp3` (ตัด 0:47–1:34 จาก YouTube wWuccFOyayU · ลิขสิทธิ์-แต่-OK <60วิ) · source เต็มเก็บ `clips/skaters-waltz_yt-source.webm` (ลองตัดท่อนอื่นได้)
+  - คลิป **58วิ** (timing.js DURATION 1740) · Music.jsx เพิ่ม params `introFade/outroFade/outroSilence` (default เดิม backward-compat) · Shorts60 ใช้ `introFade=9, outroFade=15, outroSilence=9` → **รอยต่อ loop (ต้น fade-in 0.3 + ท้ายเงียบ 0.3) รวม ~0.5วิ**
+  - **ค้าง:** รอพี่ฟัง `out/Shorts60-v03.mp4` (+ wav) ว่ารอยต่อ loop OK → ถ้าโอเค **finalize** = อัปทับ Drive `260615 Ptolemy Shorts` (ตอนนี้ Drive ยังเป็นเวอร์ชันก่อนหน้า) · ถ้าไม่ → ปรับเลข fade แล้ว render เป็น `Shorts60-v04` (ใช้เลขเวอร์ชันในชื่อกัน cache เสมอ)
 - ✅ **Shorts แนวตั้ง 1080×1920 เสร็จครบ 8/8** — Shorts60, TwoSystemsVert, MoonPhaseVert, MercuryRetroVert, VenusPhaseVert, VenusBrightestVert, OppositionVert, EclipseStoryVert (ทุกตัว voiceover+caption+bgm+credit · ขึ้น Drive `horatad-media/260615 *` + git push ครบ)
 - 🔧 **รอพี่รีวิว+ปรับทีเดียว:** เฟส Venus ยังไม่ sync caption · EclipseStoryVert ฉากย่อยมี text baked ซ้อน overlay · เลือกเพลง mood แยกคลิป · credit wording
 - ⏸ **ค้างเก่า (รอตัดสินใจ):** EclipsePhase (Eclipse แบบ epicycle) · Adhikamasa (เดือน ๘ สองหน prototype)
