@@ -16,7 +16,7 @@
 - ✓ โปรเจกต์จริง = `epicycle\` (Remotion/JSX) · พรีวิว: `cd epicycle` → `npm run dev` → localhost:3000
 - ✓ **เสร็จ+ขึ้น Drive (จัตุรัส 1080×1080):** Venus Phase · Moon Phase · Epicycle-vs-Helio (ปรับ 53วิ) · ชุด 14มิ.ย.: MercuryRetro · VenusBrightest · EclipseStory · Opposition
 - ✓ **`Shorts60` (แนวตั้ง 1080×1920 · 59วิ · 1770f) — ใหม่ล่าสุด** → `out/shorts60.mp4` · reuse FullEpicycle (bg) + TextOverlay 7-beat (ทอเลมี → พระเคราะห์ทั้งเก้า → ไทย) · โครง: **intro เพลง 5วิ → พากย์ 13 ประโยค (เว้นวรรค 0.4วิ) → outro เพลงดังต่อจนครบ 59วิ** · **timeline จาก `src/timing.js` (source of truth — แก้ GAP/INTRO/DUR ที่เดียว)**
-- ✓ **เสร็จ+ขึ้น Drive (แนวตั้ง 1080×1920):** **TwoSystemsVert** (Epicycle-vs-Helio · 59วิ · `out/twosystems-vert.mp4`) → `_FB&Social\260615 Epicycle vs Heliocentric Vert\` (15 มิ.ย. · mp4+docx) — คลิปแรกที่ใช้ reusable components (Caption/Narration/Music/Credit รับ prop `timing`)
+- ✓ **เสร็จ+ขึ้น Drive (แนวตั้ง 1080×1920):** **TwoSystemsVert** (Epicycle-vs-Helio · 59วิ · `out/twosystems-vert.mp4`) → `horatad-media\260615 Epicycle vs Heliocentric Vert\` (15 มิ.ย. · mp4+docx) — คลิปแรกที่ใช้ reusable components (Caption/Narration/Music/Credit รับ prop `timing`)
 - ▶ **กำลังทำ:** migrate คลิปเก่าทั้งหมดเป็นแนวตั้ง (MercuryRetro + TwoSystems แนวตั้งแล้ว · รออีก 5) + ใส่เพลง royalty-free 3 คลิปที่เงียบ
 - ⏸ **ค้างเก่า:** EclipsePhase · Adhikamasa (prototype)
 - ⚠️ ไม่มี git · โค้ดแยกอิสระจาก engine horatad
@@ -34,9 +34,9 @@
 
 ## เชื่อมกับระบบยังไง
 ```
-C:\horatad-media (คลิป) ──staging──▶ FB-output\YYMMDD ชื่อ\ ──คัดลอก──▶ G:\My Drive\_FB&Social\
+C:\horatad-media (คลิป) ──staging──▶ FB-output\YYMMDD ชื่อ\ ──คัดลอก──▶ G:\My Drive\horatad-media\
 ```
-- ❗ เก็บงานเสร็จขึ้น `G:\My Drive\_FB&Social\` เสมอ (ไม่ใช้ MCP Drive connector = คนละบัญชี)
+- ❗ เก็บงานเสร็จขึ้น `G:\My Drive\horatad-media\` เสมอ (ไม่ใช้ MCP Drive connector = คนละบัญชี)
 
 ## งงตรงไหนดูที่ไหน
 - render/scene/นโยบาย → `CLAUDE.md` · backlog เต็ม → auto-memory `content-backlog.md` · Shorts spec → `SHORTS_BEST_PRACTICES.md` · ecosystem → `C:\horatad\ECOSYSTEM.md`

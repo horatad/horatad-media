@@ -55,7 +55,7 @@ clips/*
 !clips/*.mid
 !clips/README.md
 
-# --- rendered media (final clips เก็บใน Google Drive _FB&Social แล้ว ไม่ต้องใส่ repo) ---
+# --- rendered media (final clips เก็บใน Google Drive horatad-media แล้ว ไม่ต้องใส่ repo) ---
 *.mp4
 *.mov
 *.webm

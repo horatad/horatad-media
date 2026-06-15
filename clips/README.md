@@ -33,7 +33,7 @@
 - **VirtualMIDISynth / MIDIMapper** → installer อยู่ Downloads\horatad-installers เช่นกัน
 
 ## Master / ผลงานสำคัญ → backup บน Drive
-`G:\My Drive\_FB&Social\_BGM-lab\` :
+`G:\My Drive\horatad-media\_BGM-lab\` :
 - `Shostakovich Waltz2 - seamless loop B (36s gapless).wav` ← BGM ที่ใช้จริงในคลิป (loop ใน epicycle)
 - `Hora Staccato (Dinicu) - violin+piano MASTER.wav`
 - `มาร์ชราชวัลลภ OMR (full band).mp3`
