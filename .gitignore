@@ -5,8 +5,40 @@
 node_modules/
 **/node_modules/
 
-# --- epicycle/ = git repo แยกของตัวเอง (มี history เอง) → backup เป็น repo ของตัวเอง ไม่ฝังเป็น submodule พังใน parent ---
-epicycle/
+# --- epicycle/ = source Remotion (รวมเข้า root repo แล้ว 15 มิ.ย. 2569 · เดิมเป็น repo แยกไม่มี remote → source ไม่ถูก backup) ---
+# เก็บ epicycle/src + scripts + public(audio/vo) · กัน node_modules/out (global ด้านบนคุมแล้ว) + AI-tool skill dirs (machine-local junk)
+epicycle/.agent/
+epicycle/.agents/
+epicycle/.claude/
+epicycle/.cline/
+epicycle/.codebuddy/
+epicycle/.codex/
+epicycle/.commandcode/
+epicycle/.continue/
+epicycle/.crush/
+epicycle/.cursor/
+epicycle/.factory/
+epicycle/.gemini/
+epicycle/.github/
+epicycle/.goose/
+epicycle/.junie/
+epicycle/.kilocode/
+epicycle/.kiro/
+epicycle/.kode/
+epicycle/.mcpjam/
+epicycle/.mux/
+epicycle/.neovate/
+epicycle/.opencode/
+epicycle/.openhands/
+epicycle/.pi/
+epicycle/.pochi/
+epicycle/.qoder/
+epicycle/.qwen/
+epicycle/.roo/
+epicycle/.trae/
+epicycle/.windsurf/
+epicycle/.zencoder/
+epicycle/skills/
 
 # --- build / render output ---
 out/
