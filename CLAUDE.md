@@ -19,6 +19,7 @@
 ## การจัดเก็บงาน
 - staging ในเครื่อง: `C:\horatad-media\FB-output\YYMMDD <ชื่อ>\` (คลิป `.mp4` + สคริปต์ `.docx`)
 - ขึ้น Drive ส่วนตัว: คัดลอกเข้า `G:\My Drive\horatad-media\YYMMDD <ชื่อ>\` (Google Drive for Desktop sync เอง — ไม่ใช้ MCP connector ซึ่งเป็นบัญชีงาน uchujaro5) · YYMMDD = วันที่ทำงาน
+  - โครง Drive `horatad-media\`: `YYMMDD <ชื่อ>\` (คลิปแต่ละชิ้น) · `_BGM-lab\` (master เพลง) · `manual-report\` (งานเกี่ยวเนื่องที่พี่ปีเตอร์ทำเอง) · `processed\`, `voice_prototypes\`
 - **❗ มาตรฐาน (ตั้ง 15 มิ.ย. 2569): หลังอัพขึ้น Drive ทุกครั้ง → อัปเดตสถานะใน `CLAUDE.md` (## สถานะงาน) + memory `content-backlog.md` ทันที** (ระบุคลิปที่ขึ้นแล้ว · ชื่อ folder Drive · ย้ายจาก "ค้าง"→"เสร็จ") — กันสถานะล้าสมัย/สับสนข้าม session
 
 ## สถานะงาน (อัพเดต 14 มิ.ย. 2026 · รายละเอียดเต็มใน auto-memory `content-backlog.md`)
