@@ -4,6 +4,7 @@
 ## References
 - Shorts best practices (หลักการ 7-beat/hook): C:\horatad-media\SHORTS_BEST_PRACTICES.md
 - **Shorts production recipe + ค่าจริง (ต้นแบบมาตรฐาน `Shorts60`): C:\horatad-media\SHORTS_TEMPLATE.md** — ใช้ทำคลิป Shorts ถัดไปทุกตัว (script/voiceover/bgm/timing/caption/credit/epicycle props)
+- **แล็บผลิตเพลงประกอบ (BGM): `clips\README.md`** — pipeline โน้ต→OMR(Audiveris)→MIDI→render soundfont (fluidsynth) · ⚠️ สคริปต์ hardcode path `clips\` ห้าม rename · master เก็บ Drive `_FB&Social\_BGM-lab\` · เพลงที่ใช้จริงไป `epicycle\public\audio\`
 ## โปรเจกต์ Remotion ที่ใช้งานจริง: `epicycle\` (JSX)
 - **พรีวิว:** `cd epicycle` แล้ว `npm run dev` → http://localhost:3000 (dev server หยุดเมื่อเครื่อง sleep → สตาร์ทใหม่ได้เลย)
 - **render:** จากโฟลเดอร์ `epicycle\` → `npx remotion still src/index.js <CompId> out/<x>.png --frame=N` (เช็คภาพนิ่ง) หรือ `npx remotion render src/index.js <CompId> out/<x>.mp4` (เต็ม)
