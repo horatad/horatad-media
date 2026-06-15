@@ -31,7 +31,7 @@ export function Shorts60() {
         <Credit />
       </AbsoluteFill>
       <Narration />
-      <Music music="audio/skaters-waltz.mp3" />
+      <Music music="audio/skaters-waltz.mp3" outroSilence={30} />
     </AbsoluteFill>
   );
 }
