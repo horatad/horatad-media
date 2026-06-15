@@ -33,7 +33,7 @@ export const SEG = [];
 }
 
 export const VO_END = SEG[SEG.length - 1].end;   // เสียงพูดจบ → เริ่ม outro
-export const DURATION = 1770;                     // 59 วิ (max) — outro เพลงดังต่อจาก VO_END
+export const DURATION = 1740;                     // 58 วิ — ตัดวินาทีสุดท้ายออก (พี่สั่ง · credit/fade ปลาย recalc ปิดเนียนที่ 58วิ)
 
 // caption แสดงต่อเนื่องถึง segment ถัดไป (segment สุดท้ายค้างถึง VO_END)
 export const capTo = (i) => (SEG[i + 1] ? SEG[i + 1].from : VO_END);
