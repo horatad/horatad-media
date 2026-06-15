@@ -19,6 +19,10 @@ import {Opposition} from './scenes/Opposition.jsx';
 import {Shorts60} from './scenes/Shorts60.jsx';
 import {TwoSystemsVert} from './scenes/TwoSystemsVert.jsx';
 import {MoonPhaseVert} from './scenes/MoonPhaseVert.jsx';
+import {VenusPhaseVert} from './scenes/VenusPhaseVert.jsx';
+import {VenusBrightestVert} from './scenes/VenusBrightestVert.jsx';
+import {OppositionVert} from './scenes/OppositionVert.jsx';
+import {EclipseStoryVert} from './scenes/EclipseStoryVert.jsx';
 import {DURATION as SHORTS60_FRAMES} from './timing.js';
 const FRAMES=2700;
 export const RemotionRoot=()=>(
@@ -43,5 +47,9 @@ export const RemotionRoot=()=>(
     <Composition id="Shorts60" component={Shorts60} durationInFrames={SHORTS60_FRAMES} fps={30} width={1080} height={1920}/>
     <Composition id="TwoSystemsVert" component={TwoSystemsVert} durationInFrames={1770} fps={30} width={1080} height={1920}/>
     <Composition id="MoonPhaseVert" component={MoonPhaseVert} durationInFrames={1770} fps={30} width={1080} height={1920}/>
+    <Composition id="VenusPhaseVert" component={VenusPhaseVert} durationInFrames={1770} fps={30} width={1080} height={1920}/>
+    <Composition id="VenusBrightestVert" component={VenusBrightestVert} durationInFrames={1770} fps={30} width={1080} height={1920}/>
+    <Composition id="OppositionVert" component={OppositionVert} durationInFrames={1770} fps={30} width={1080} height={1920}/>
+    <Composition id="EclipseStoryVert" component={EclipseStoryVert} durationInFrames={1770} fps={30} width={1080} height={1920}/>
   </>
 );
