@@ -1,7 +1,7 @@
 // timing-merc.js — source of truth สำหรับ MercuryRetroVert (ดาวพุธพักร = ภาพลวงตา)
 // intro เพลง 5วิ → พากย์ 11 ประโยค (gap 0.2วิ) → outro เพลง + credit
 
-const DUR = [127, 143, 132, 85, 124, 106, 124, 157, 85, 99, 111]; // เสียงจริง (เฟรม · ffprobe)
+const DUR = [126, 144, 130, 85, 124, 106, 124, 152, 85, 98, 112]; // เสียงจริง (เฟรม · ffprobe · regen no-space 16มิ.ย.)
 const GAP = 6;
 const INTRO = 150;
 
