@@ -26,7 +26,7 @@ export const SEG = [];
   for (let i = 0; i < DUR.length; i++) { SEG.push({from: c, end: c + DUR[i], text: TEXT[i]}); c += DUR[i] + GAP; }
 }
 export const VO_END = SEG[SEG.length - 1].end;
-export const DURATION = 1770;
+export const DURATION = 1740; // 58วิ (มาตรฐานใหม่ 16 มิ.ย. — เลี่ยงเตือนลิขสิทธิ์ YouTube · เดิม 1770)
 export const capTo = (i) => (SEG[i + 1] ? SEG[i + 1].from : VO_END);
 
 export const BEATS = {

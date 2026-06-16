@@ -41,7 +41,7 @@ export const RemotionRoot=()=>(
     <Composition id="EclipseSaros" component={EclipseSaros} durationInFrames={320} fps={30} width={1080} height={1080}/>
     <Composition id="EclipseStory" component={EclipseStory} durationInFrames={990} fps={30} width={1080} height={1080}/>
     <Composition id="EclipsePhase" component={EclipsePhase} durationInFrames={FRAMES} fps={30} width={1080} height={1080}/>
-    <Composition id="MercuryRetro" component={MercuryRetro} durationInFrames={1770} fps={30} width={1080} height={1920}/>
+    <Composition id="MercuryRetro" component={MercuryRetro} durationInFrames={1740} fps={30} width={1080} height={1920}/>
     <Composition id="VenusBrightest" component={VenusBrightest} durationInFrames={FRAMES} fps={30} width={1080} height={1080}/>
     <Composition id="Opposition" component={Opposition} durationInFrames={600} fps={30} width={1080} height={1080}/>
     <Composition id="Shorts60" component={Shorts60} durationInFrames={SHORTS60_FRAMES} fps={30} width={1080} height={1920}/>
