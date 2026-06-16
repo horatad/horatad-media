@@ -18,6 +18,7 @@
 
 ## การจัดเก็บงาน
 - staging ในเครื่อง: `C:\horatad-media\FB-output\YYMMDD <ชื่อ>\` (คลิป `.mp4` + สคริปต์ `.docx`)
+- **ไฟล์ให้พี่ปีเตอร์ฟัง/ดูทดสอบ → `C:\horatad-media\_review\YYMMDD <ชื่อ>\`** (ราก project ชั้นเดียว หาง่าย · ชื่อไฟล์ **เลขนำ+ไทยอธิบายในตัว** เรียงตามลำดับฟัง เช่น `02-พุธพักร-พุดพัก.mp3` + ไฟล์ `อ่านก่อน.txt` อธิบายแต่ละตัว) · `_review/` อยู่ใน .gitignore (throwaway ไม่ commit) · **ห้ามวางไฟล์รีวิวลึกใน `epicycle\out\` (build dir ลึก/รก คนหายาก)**
 - ขึ้น Drive ส่วนตัว: คัดลอกเข้า `G:\My Drive\horatad-media\YYMMDD <ชื่อ>\` (Google Drive for Desktop sync เอง — ไม่ใช้ MCP connector ซึ่งเป็นบัญชีงาน uchujaro5) · YYMMDD = วันที่ทำงาน
   - โครง Drive `horatad-media\`: `YYMMDD <ชื่อ>\` (คลิปแต่ละชิ้น) · `_BGM-lab\` (master เพลง) · `manual-report\` (งานเกี่ยวเนื่องที่พี่ปีเตอร์ทำเอง) · `processed\`, `voice_prototypes\`
 - **❗ มาตรฐาน (ตั้ง 15 มิ.ย. 2569): หลังอัพขึ้น Drive ทุกครั้ง → อัปเดตสถานะใน `CLAUDE.md` (## สถานะงาน) + memory `content-backlog.md` ทันที** (ระบุคลิปที่ขึ้นแล้ว · ชื่อ folder Drive · ย้ายจาก "ค้าง"→"เสร็จ") — กันสถานะล้าสมัย/สับสนข้าม session
