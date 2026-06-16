@@ -1,7 +1,7 @@
 # _gen_media_index.py — สร้างดัชนี index.html ให้ทุกโฟลเดอร์ใน media-sources\
 # รองรับโครงซ้อนหลายชั้น (เปียโน=แบน · กีตาร์=A-B/composer/...) · ลิสต์เฉพาะไฟล์ MIDI (.mid/.midi)
 # รัน: python _gen_media_index.py   (regenerate ใหม่เมื่อไฟล์เปลี่ยน)
-import os, html
+import os, html, urllib.parse
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "media-sources")
 MIDEXT = (".mid", ".midi")
@@ -46,6 +46,11 @@ def list_midis(base):
 def folder_index(path, name):
     items = list_midis(path)
     total = sum(s for _, s in items)
+    # หา index ละเอียดของต้นฉบับ (.mhtml/.htm) ในโฟลเดอร์ → ลิงก์ให้คลิกดูรายละเอียดเพลงเต็ม
+    details = sorted(f for f in os.listdir(path)
+                     if f.lower().endswith((".mhtml", ".mht", ".html", ".htm")) and f.lower() != "index.html")
+    dlink = (f" · <a href='{urllib.parse.quote(details[0])}'>📄 รายละเอียดเพลงเต็ม (ต้นฉบับ)</a>"
+             if details else "")
     rows = ""
     for i, (rel, sz) in enumerate(items, 1):
         d, b = (rel.rsplit("/", 1) + [""])[:2] if "/" in rel else ("", rel)
@@ -57,7 +62,7 @@ def folder_index(path, name):
 <meta name=viewport content="width=device-width,initial-scale=1">
 <title>ดัชนี — {html.escape(name)}</title><style>{CSS}</style></head><body>
 <h1>📁 {html.escape(name)}</h1>
-<div class=sub>media-sources / {html.escape(name)} · <b id=cnt>{len(items)}</b> ไฟล์ MIDI · รวม {human(total)} · <a href='../index.html'>← ดัชนีรวม</a></div>
+<div class=sub>media-sources / {html.escape(name)} · <b id=cnt>{len(items)}</b> ไฟล์ MIDI · รวม {human(total)}{dlink} · <a href='../index.html'>← ดัชนีรวม</a></div>
 <input id=q placeholder="🔍 ค้นหาชื่อไฟล์ / โฟลเดอร์...">
 <table><thead><tr><th>#</th><th>ไฟล์ (โฟลเดอร์/ชื่อ)</th><th class=r>ขนาด</th></tr></thead>
 <tbody>{rows}</tbody></table>{SEARCH_JS}</body></html>"""
