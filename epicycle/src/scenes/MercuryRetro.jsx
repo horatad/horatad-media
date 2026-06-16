@@ -14,8 +14,8 @@ import * as timingMerc from '../timing-merc.js';
 // อัตรา/รัศมี heliocentric-equivalent จาก physics.js:
 //   โลก ∝ SS=0.28 (1 AU) · พุธ ∝ eS=1.163 (0.387 AU) → พุธเร็วกว่าโลก ~4.15 เท่า (คาบ 0.241 ปี)
 const W=1080,H=1920,SPEED=0.45;      // แนวตั้ง 9:16 (YouTube Shorts) · ช้าลงให้ retro window ยาวพอครอบช่วงพากย์อธิบาย
-const CX=540,CY=860;                 // diagram กึ่งกลางค่อนบน · เว้นล่างให้ caption
-const AU=270;                       // 1 AU = 270px (ขยายสเกลให้เห็นชัดบนมือถือ · เดิม 210)
+const CX=540,CY=1010;                // diagram กึ่งกลางค่อนล่าง · บนเว้นให้ caption (ย้ายขึ้น) · ล่างพ้นปุ่ม Shorts
+const AU=340;                       // 1 AU = 340px (ขยายสเกลให้เห็นชัดบนมือถือแนวตั้ง · เดิม 210→270→340)
 const rE=AU, rMe=AU*0.469;          // วงโคจร โลก / พุธ — พุธ 0.469 เท่าโลก (ดันออกให้เห็นชัด + max elongation = asin(0.469) ≈ 28° ตรง label · เดิม 0.387)
 const RING=478;                     // แถบดาวฤกษ์ (celestial sphere)
 const wE=0.28, wMe=1.163;           // อัตราเชิงมุม "องศา" ต่อ f-unit (จาก physics.js)
@@ -115,42 +115,42 @@ function draw(canvas,frame){
     ctx.beginPath();ctx.moveTo(E.x,E.y);ctx.lineTo(hit.x,hit.y);
     ctx.strokeStyle=retro?'rgba(255,90,90,.85)':'rgba(150,235,150,.7)';
     ctx.lineWidth=1.4;ctx.setLineDash([6,5]);ctx.stroke();ctx.setLineDash([]);
-    ctx.shadowColor=retro?'#ff3333':'#55dd55';ctx.shadowBlur=22;
+    ctx.shadowColor=retro?'#ff3333':'#55dd55';ctx.shadowBlur=28;
     ctx.fillStyle=retro?'#ff5555':'#9af09a';
-    ctx.beginPath();ctx.arc(hit.x,hit.y,10,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+    ctx.beginPath();ctx.arc(hit.x,hit.y,13,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
   }
 
   // รัศมี Sun→Earth, Sun→Mercury (จาง)
   ctx.strokeStyle='rgba(255,255,255,.12)';ctx.lineWidth=.6;
   [E,M].forEach(P=>{ctx.beginPath();ctx.moveTo(CX,CY);ctx.lineTo(P.x,P.y);ctx.stroke();});
 
-  // ดวงอาทิตย์ (ขยาย ×1.65 คงสัดส่วน)
-  ctx.shadowColor='#ffaa33';ctx.shadowBlur=46;
-  const sg=ctx.createRadialGradient(CX,CY,0,CX,CY,26);
+  // ดวงอาทิตย์ (ขยาย ×2.2 จากเดิม คงสัดส่วน)
+  ctx.shadowColor='#ffaa33';ctx.shadowBlur=56;
+  const sg=ctx.createRadialGradient(CX,CY,0,CX,CY,35);
   sg.addColorStop(0,'#fff7e0');sg.addColorStop(.5,'#ffcc44');sg.addColorStop(1,'#ff7711');
-  ctx.beginPath();ctx.arc(CX,CY,25,0,Math.PI*2);ctx.fillStyle=sg;ctx.fill();ctx.shadowBlur=0;
+  ctx.beginPath();ctx.arc(CX,CY,33,0,Math.PI*2);ctx.fillStyle=sg;ctx.fill();ctx.shadowBlur=0;
 
-  // โลก (ขยาย ×1.65 คงสัดส่วน)
-  ctx.shadowColor='#aaddff';ctx.shadowBlur=28;
-  const eg=ctx.createRadialGradient(E.x,E.y,0,E.x,E.y,15);
+  // โลก (ขยาย ×2.2 จากเดิม คงสัดส่วน)
+  ctx.shadowColor='#aaddff';ctx.shadowBlur=36;
+  const eg=ctx.createRadialGradient(E.x,E.y,0,E.x,E.y,20);
   eg.addColorStop(0,'#fff');eg.addColorStop(1,'#5599ee');
-  ctx.beginPath();ctx.arc(E.x,E.y,13,0,Math.PI*2);ctx.fillStyle=eg;ctx.fill();ctx.shadowBlur=0;
-  ctx.fillStyle='rgba(190,220,255,.95)';ctx.font='600 20px sans-serif';
-  ctx.textAlign='center';ctx.textBaseline='top';ctx.fillText('โลก',E.x,E.y+17);
+  ctx.beginPath();ctx.arc(E.x,E.y,18,0,Math.PI*2);ctx.fillStyle=eg;ctx.fill();ctx.shadowBlur=0;
+  ctx.fillStyle='rgba(190,220,255,.95)';ctx.font='600 26px sans-serif';
+  ctx.textAlign='center';ctx.textBaseline='top';ctx.fillText('โลก',E.x,E.y+22);
 
-  // ดาวพุธ (ขยาย ×1.65 คงสัดส่วน)
-  ctx.shadowColor='#33bb33';ctx.shadowBlur=24;
-  const mg=ctx.createRadialGradient(M.x,M.y,0,M.x,M.y,12);
+  // ดาวพุธ (ขยาย ×2.2 จากเดิม คงสัดส่วน)
+  ctx.shadowColor='#33bb33';ctx.shadowBlur=30;
+  const mg=ctx.createRadialGradient(M.x,M.y,0,M.x,M.y,16);
   mg.addColorStop(0,'#e0ffe0');mg.addColorStop(1,'#33bb33');
-  ctx.beginPath();ctx.arc(M.x,M.y,10,0,Math.PI*2);ctx.fillStyle=mg;ctx.fill();ctx.shadowBlur=0;
-  ctx.fillStyle='rgba(150,235,150,.95)';ctx.font='600 20px sans-serif';
-  ctx.textBaseline='bottom';ctx.fillText('พุธ',M.x,M.y-14);
+  ctx.beginPath();ctx.arc(M.x,M.y,14,0,Math.PI*2);ctx.fillStyle=mg;ctx.fill();ctx.shadowBlur=0;
+  ctx.fillStyle='rgba(150,235,150,.95)';ctx.font='600 26px sans-serif';
+  ctx.textBaseline='bottom';ctx.fillText('พุธ',M.x,M.y-18);
 
   // ป้ายจุดที่เห็น
   if(hit){
-    const lx=hit.x, ly=hit.y+(hit.y<CY?-30:30);
+    const lx=hit.x, ly=hit.y+(hit.y<CY?-34:34);
     ctx.fillStyle=retro?'#ff8080':'rgba(150,235,150,.9)';
-    ctx.font='600 18px sans-serif';ctx.textAlign='center';
+    ctx.font='600 22px sans-serif';ctx.textAlign='center';
     ctx.textBaseline=hit.y<CY?'bottom':'top';
     ctx.fillText('พุธที่เห็นบนฟ้า',lx,ly);
   }
@@ -172,11 +172,11 @@ function draw(canvas,frame){
   ctx.fillStyle='rgba(150,235,150,.6)';ctx.font='400 21px sans-serif';
   ctx.fillText('พุธห่างดวงอาทิตย์ '+elong(f).toFixed(0)+'° (สูงสุด ~28°)',W-44,126);
 
-  // badge สถานะพักร/ปกติ (กลางบน ใต้ title) — caption เสียงพากย์อยู่ล่างแล้ว (Caption component)
+  // badge สถานะพักร/ปกติ (กลางบน เหนือ diagram · caption ย้ายขึ้นบนสุดแล้ว)
   ctx.textAlign='center';ctx.textBaseline='alphabetic';
-  ctx.font='700 40px sans-serif';
+  ctx.font='700 44px sans-serif';
   ctx.fillStyle=retro?'#ff6a6a':'#7be87b';
-  ctx.fillText(retro?'●  ตอนนี้: ดาวพุธพักร — ดูถอยหลัง':'●  ตอนนี้: พุธเดินหน้าปกติ',CX,300);
+  ctx.fillText(retro?'●  ตอนนี้: ดาวพุธพักร — ดูถอยหลัง':'●  ตอนนี้: พุธเดินหน้าปกติ',CX,440);
 }
 
 export function MercuryRetro(){
@@ -191,7 +191,7 @@ export function MercuryRetro(){
     <AbsoluteFill style={{background:'#010814'}}>
       <AbsoluteFill style={{opacity:loopFade}}>
         <canvas ref={ref} style={{width:W,height:H,position:'absolute'}}/>
-        <Caption timing={timingMerc}/>
+        <Caption timing={timingMerc} pos="top"/>
         <Credit timing={timingMerc} label="based on" source="HELIOCENTRIC" sub="Copernicus · 1543"/>
       </AbsoluteFill>
       <Narration timing={timingMerc} voDir="vo-merc"/>
