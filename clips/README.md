@@ -5,6 +5,8 @@
 
 ทำเพลง/เสียงประกอบให้คลิป Remotion (`epicycle/public/audio/`) — เช่น `shostakovich-waltz2-loop.wav` มาจากที่นี่
 
+> 📚 **คลัง MIDI อ้างอิง (reference sources) ย้ายออกไป `C:\horatad-media\media-sources\` แล้ว (17 มิ.ย. 2569)** — โฟลเดอร์นักประพันธ์ (mozart, beethoven, chopin ฯลฯ) + Media/ + others/ · แต่ละโฟลเดอร์มีดัชนี `index.html` (regen ด้วย `_gen_media_index.py` ที่ราก project) · `clips\` เหลือเฉพาะ **lab/ทดสอบ** (สคริปต์ + ไฟล์ MIDI ที่ hardcode + omr + outputs)
+
 ## Pipeline
 ```
 โน้ตเพลง (PDF/MusicXML)

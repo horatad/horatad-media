@@ -46,6 +46,10 @@ build/
 dist/
 FB-output/
 
+# --- media-sources/ = คลัง MIDI อ้างอิง (reference sources · ย้ายออกจาก clips 17 มิ.ย.) ---
+# ไม่ commit (ของอ้างอิง downloadable · ดัชนี index.html regen ได้ด้วย _gen_media_index.py ที่ track ไว้)
+media-sources/
+
 # --- _review/ = staging ไฟล์ให้พี่ปีเตอร์ฟัง/ดูทดสอบ (throwaway · ไม่ commit) ---
 _review/
 
