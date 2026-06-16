@@ -18,7 +18,7 @@
 🎬 **โรงงานทำคลิป** — แอนิเมชันอธิบายดาราศาสตร์/ปฏิทิน (Remotion) ลง FB/YouTube Shorts โปรโมทงานโหราฯ Horatad
 
 ## นโยบาย/มาตรฐาน
-- ปลายทาง **YouTube Shorts → แนวตั้ง 1080×1920 · 30fps · ≤59วิ** (เพลงลิขสิทธิ์ · ดู `SHORTS_TEMPLATE.md`)
+- ปลายทาง **YouTube Shorts → แนวตั้ง 1080×1920 · 30fps · ≤58วิ = 1740 เฟรม** (เพลงลิขสิทธิ์ · ลดจาก 59วิ เมื่อ 16 มิ.ย. 2569 เพราะ YouTube เตือนคลิป ~1 นาทีอาจเข้าข่ายผิดลิขสิทธิ์ · คลิปเก่ายังไม่แก้ รอดูสถานการณ์ · ดู `SHORTS_TEMPLATE.md`)
 - โปรเจกต์จริง = `epicycle\` (Remotion/JSX) · พรีวิว: `cd epicycle` → `npm run dev` → localhost:3000
 - render: `cd epicycle && npx remotion render src/index.js <CompId> out/<x>.mp4`
 - pipeline reuse: `Caption/Narration/Music/Credit` รับ prop `timing` → คลิปใหม่แค่ทำ `timing-X.js` + `gen-vo-X.py`

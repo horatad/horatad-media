@@ -10,7 +10,7 @@
 - **render:** จากโฟลเดอร์ `epicycle\` → `npx remotion still src/index.js <CompId> out/<x>.png --frame=N` (เช็คภาพนิ่ง) หรือ `npx remotion render src/index.js <CompId> out/<x>.mp4` (เต็ม)
 - **นโยบายคลิป — YouTube Shorts (ตั้ง 14 มิ.ย. 2569 · ดู memory `video-length-standard`):**
   - **รูปแบบ: แนวตั้ง 9:16 = `1080×1920` · 30fps** · ⚠️ scenes ปัจจุบันยังเป็น `1080×1080` (จัตุรัส) → ต้อง **re-layout เป็นแนวตั้ง** (ไม่ใช่แค่เปลี่ยนเลข: ขยับ diagram กลาง CY≈960 + ใช้พื้นที่บน/ล่างสำหรับ title/caption)
-  - **ความยาว: ถ้าใช้เพลงมีลิขสิทธิ์ → ห้ามเกิน 60 วินาที** (เพดาน ~59วิ = 1770 เฟรม · เลี่ยง copyright claim) · ไม่มีเพลง/ปลอดลิขสิทธิ์ → ยาวได้ (Shorts ≤3นาที) · sync เพลง fade out ลงพอดีปลายคลิป
+  - **ความยาว: ถ้าใช้เพลงมีลิขสิทธิ์ → ≤ 58 วินาที = 1740 เฟรม** (ลดจาก 59วิ เมื่อ 16 มิ.ย. 2569 — YouTube เตือนคลิป ~1 นาทีอาจเข้าข่ายผิดลิขสิทธิ์ · 58วิ = buffer ปลอดภัย) · ไม่มีเพลง/ปลอดลิขสิทธิ์ → ยาวได้ (Shorts ≤3นาที) · sync เพลง fade out ลงพอดีปลายคลิป · ⚠️ คลิปที่ลงไปแล้วยังไม่ต้องแก้ รอดูสถานการณ์
 - ฟิสิกส์อยู่ที่ `epicycle\src\physics.js` (`gP`,`isRetro` — โมเดล geocentric epicycle; อัตราส่วน `epiR/defR` = รัศมีวงโคจรจริง (AU) → **เทียบเท่า heliocentric** ดึงตำแหน่ง Sun-centered จากข้อมูลชุดเดิมได้)
 - scenes (ใน `epicycle\src\scenes\`): FullEpicycle, FullEpicycleInner, VenusPhase, MoonPhase, AllTrails, Adhikamasa, HelioRetro, HelioDual, TwoSystems, Eclipse, EclipseGround, EclipseSaros, EclipseStory, EclipsePhase, MercuryRetro, VenusBrightest, Opposition · register ใน `Root.jsx`
 - docx generator (โทน "ที่หลายคนเข้าใจผิด" + emoji + โยงโหราศาสตร์): `epicycle\gen-docx-*.mjs` (mercury/venus/eclipse/opposition) — `node gen-docx-X.mjs <out.docx>` · ใช้ docx-js ที่ `epicycle\node_modules\docx`

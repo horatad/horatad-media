@@ -8,14 +8,14 @@
 ---
 
 ## สเปคพื้นฐาน
-- **แนวตั้ง 1080×1920 · 30fps · ≤ 59 วินาที** (เพลง < 60วิ เลี่ยง YouTube auto-block · ดู [[video-length-standard]])
+- **แนวตั้ง 1080×1920 · 30fps · ≤ 58 วินาที = 1740 เฟรม** (ลดจาก 59วิ เมื่อ 16 มิ.ย. 2569 — YouTube เตือนคลิป ~1 นาทีอาจเข้าข่ายผิดลิขสิทธิ์ · 58วิ = buffer · ดู [[video-length-standard]])
 
 ## TIMELINE มาตรฐาน
 ```
 0–5วิ      intro เพลงเปิด (ดังเต็ม ยังไม่พูด)
 5–48.7วิ   เสียงพากย์ (gap 0.2วิ/ประโยค) + caption ล่าง + title เฉพาะจุด impact
 48.7–53.7วิ เพลง outro ดังต่อ + epicycle (เว้น 5วิ หลังพูดจบ)
-53.7–59วิ   Credit end-card
+53.7–58วิ   Credit end-card
 ```
 
 ## โครงไฟล์ (epicycle/src/)
@@ -46,7 +46,7 @@
 ## 3. จังหวะเวลา (timing.js)
 - `GAP = 6` (0.2วิ เว้นวรรคระหว่างประโยค)
 - `INTRO = 150` (5วิ เพลงเปิด ก่อนเสียงพูด)
-- `DURATION = 1770` (59วิ · เพดาน)
+- `DURATION = 1740` (58วิ · เพดาน — ลดจาก 1770 เมื่อ 16 มิ.ย. 2569 เลี่ยงเตือนลิขสิทธิ์ YouTube)
 - credit delay = `VO_END + 150` (5วิ หลังพากย์จบ — ใน Credit.jsx)
 - `SEG` from-frame คำนวณอัตโนมัติ: เริ่มที่ INTRO → +DUR+GAP ต่อประโยค → Caption/Narration/Title/Music ดึงจากนี้ทั้งหมด
 
@@ -112,5 +112,5 @@
 5. ปรับ scene bg (ถ้าเปลี่ยนจาก epicycle) หรือ props FullEpicycle
 6. render: `cd epicycle && node setup5.js --render`
 7. **ตรวจ still ทุก beat** (hook/lineage/twist/credit) → ปรับ → render เต็ม
-8. คุม ≤59วิ · ตรวจ audio (ffprobe volumedetect mean ≈ -25dB = มีเสียง)
+8. คุม ≤58วิ (1740 เฟรม) · ตรวจ audio **ของไฟล์ที่จะอัปจริง** (`ffmpeg -i x.mp4 -af volumedetect` → mean ≈ -25dB = มีเสียง · -91dB = แทร็กเปล่า เงียบ อย่าอัป)
 9. **เขียน script โพสต์ FB/YT (.docx) คู่ทุกคลิป** — ดู §8 · `gen-docx-X.mjs` → วาง FB-output (ทำเองได้เลย ไม่ต้องรอสั่ง)

@@ -29,8 +29,8 @@
 | 3. Wrong Answer | 360–750 | สิ่งที่คนเชื่อผิด |
 | 4. Pattern Interrupt | 750–1050 | Music shift / reframe |
 | 5. Slow Reveal | 1050–1500 | เฉลยทีละชั้น |
-| 6. Philosophical Twist | 1500–1770 | Silence → ประโยคสรุปที่ implicates viewer |
-| 7. Loop End | 1770–1800 | จบด้วยภาพที่ loop กลับ frame 0 ได้ |
+| 6. Philosophical Twist | 1500–1710 | Silence → ประโยคสรุปที่ implicates viewer |
+| 7. Loop End | 1710–1740 | จบด้วยภาพที่ loop กลับ frame 0 ได้ (เพดาน 1740 = 58วิ) |
 
 ---
 
