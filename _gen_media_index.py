@@ -54,8 +54,11 @@ def list_midis(base):
     return out
 
 def is_category(folder):
-    """หมวด = มี subfolder ที่บรรจุ .mid โดยตรง (เช่น piano-classical/mozart) · กีตาร์(A-B/composer/) ไม่ใช่"""
+    """หมวด = มี subfolder ที่บรรจุ .mid โดยตรง (เช่น piano-classical/mozart) · กีตาร์(A-B/composer/) ไม่ใช่
+    ข้ามโฟลเดอร์ที่ขึ้นต้น _ (เช่น _downloaded, _pages — เป็นของระบบ ไม่ใช่ composer)"""
     for sub in os.listdir(folder):
+        if sub.startswith("_"):
+            continue
         sp = os.path.join(folder, sub)
         if os.path.isdir(sp) and any(f.lower().endswith(MIDEXT) for f in os.listdir(sp)):
             return True
@@ -230,13 +233,16 @@ def process(folder, name, is_root=False):
         p = os.path.join(folder, stale)
         if os.path.exists(p):
             os.remove(p)
+    # กีตาร์: ถ้ามี _pages/*.mhtml → ทำ guitar_hub เสมอ (ก่อนเช็ค category · กัน _downloaded ทำให้เพี้ยน)
+    pages = os.path.join(folder, "_pages")
+    if not is_root and os.path.isdir(pages) and any(f.lower().endswith((".mhtml", ".mht")) for f in os.listdir(pages)):
+        items = list_midis(folder)
+        total = sum(s for _, s in items)
+        nf, tot, nmiss = guitar_hub(folder, name, items)
+        return "index.html", nf, tot, f"🎸 หน้าเว็บต้นฉบับ · ⬇️ {nmiss}"
     if not is_root and not is_category(folder):
         items = list_midis(folder)
         total = sum(s for _, s in items)
-        pages = os.path.join(folder, "_pages")
-        if os.path.isdir(pages) and any(f.lower().endswith((".mhtml", ".mht")) for f in os.listdir(pages)):
-            nf, tot, nmiss = guitar_hub(folder, name, items)
-            return "index.html", nf, tot, f"🎸 หน้าเว็บต้นฉบับ · ⬇️ {nmiss}"
         src = next((f for f in sorted(os.listdir(folder)) if f.lower().endswith((".mhtml", ".mht"))), None)
         if src:
             try:
