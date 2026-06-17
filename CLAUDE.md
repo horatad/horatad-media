@@ -8,7 +8,9 @@
 - **คลัง MIDI อ้างอิง: `media-sources\`** (แยกออกจาก clips 17 มิ.ย. 2569) — โฟลเดอร์นักประพันธ์ (mozart/beethoven/chopin ฯลฯ) + Media/others · แต่ละโฟลเดอร์มีดัชนี `index.html` (regen: `python _gen_media_index.py` ที่ราก) · git ignore (ของอ้างอิง) · ⚠️ clips\ ใช้เฉพาะ lab — reference ไม่ปนกัน
   - **กลยุทธ์ที่เก็บ (พี่ปีเตอร์ฟันธง 17 มิ.ย.): ตอนนี้เก็บ local C:\ ก่อน (ความเร็วตอนทดสอบ) · อนาคตย้าย master ขึ้น Google Drive** (`G:\My Drive\horatad-media\media-sources\` · backup + ไม่พึ่ง streaming ตอนทำงาน)
   - คลัง **กีตาร์ 1,969 ไฟล์ copy ลง local แล้ว (17 มิ.ย.): `media-sources\guitar\`** (จัด A-B/composer/ ซ้อนชั้น + Index เดิมของคลัง) · ต้นฉบับยังอยู่ Drive `G:\My Drive\horatad-midi\Guitar121015\` (backup + ต้นทาง master อนาคต) · คนละชุดกับเปียโน
-  - รวม media-sources ตอนนี้ = **17 โฟลเดอร์ · 2,248 ไฟล์ MIDI · 24MB** (เปียโนคลาสสิก + กีตาร์) · `_gen_media_index.py` recursive ลิสต์ .mid ทุกชั้น + ช่องค้นหา · ตอนทำ master รอบหน้าค่อยจัด `piano-classical\` + `guitar\` แล้วยกขึ้น Drive
+  - **โครง taxonomy (จัด 17 มิ.ย.):** `media-sources\piano-classical\` (14 นักประพันธ์ + Media + others · 279 ไฟล์) + `media-sources\guitar\` (1,969 ไฟล์) · รวม 2,248 MIDI · 24MB
+  - **ดัชนีแบบ hub** (`_gen_media_index.py`): `index.html` ราก → `piano-classical\index.html` (hub ย่อย) → composer `detail.html` · เปียโนแปลงจาก `.mhtml` ต้นฉบับ (รายละเอียดเต็ม+เล่น local) · Media/others อ่าน meta MIDI (mido) · กีตาร์ชื่อจากไฟล์+โฟลเดอร์+ค้นหา · regen: `python _gen_media_index.py`
+  - ตอนทำ master รอบหน้า → ยกทั้ง `media-sources\` ขึ้น Drive (โครงนี้ใช้ได้เลย)
 ## โปรเจกต์ Remotion ที่ใช้งานจริง: `epicycle\` (JSX)
 - **พรีวิว:** `cd epicycle` แล้ว `npm run dev` → http://localhost:3000 (dev server หยุดเมื่อเครื่อง sleep → สตาร์ทใหม่ได้เลย)
 - **render:** จากโฟลเดอร์ `epicycle\` → `npx remotion still src/index.js <CompId> out/<x>.png --frame=N` (เช็คภาพนิ่ง) หรือ `npx remotion render src/index.js <CompId> out/<x>.mp4` (เต็ม)

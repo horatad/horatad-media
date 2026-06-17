@@ -1,7 +1,9 @@
-# _gen_media_index.py — สร้างดัชนี media-sources\ : root hub → detail.html ทุกโฟลเดอร์
-#  เปียโน    : แปลง .mhtml ต้นฉบับ → detail.html (รายละเอียดเต็ม + ลิงก์เล่นไฟล์ local)
-#  Media/others: อ่าน meta ในไฟล์ MIDI (track_name=ชื่อเพลง, text=นักประพันธ์/tempo)
-#  กีตาร์    : ชื่อเพลงจากชื่อไฟล์ + นักประพันธ์จากโฟลเดอร์แม่ (meta ไม่มีชื่อเพลง)
+# _gen_media_index.py — ดัชนี media-sources\ แบบหมวด (taxonomy):
+#   media-sources/index.html (hub) → piano-classical/index.html (hub ย่อย) → <composer>/detail.html
+#                                   → guitar/detail.html
+#   เปียโน composer : แปลง .mhtml → detail.html (รายละเอียดเต็ม + ลิงก์เล่น local)
+#   Media/others    : อ่าน meta MIDI → ชื่อเพลง/นักประพันธ์/tempo
+#   guitar          : ชื่อเพลงจากชื่อไฟล์ + นักประพันธ์จากโฟลเดอร์ + ค้นหา
 # รัน: python _gen_media_index.py
 import os, html, urllib.parse, email, re, base64
 try:
@@ -11,7 +13,7 @@ except ImportError:
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "media-sources")
 MIDEXT = (".mid", ".midi")
-META_MAX = 60   # โฟลเดอร์ไฟล์ <= นี้จึงอ่าน meta MIDI (กันช้ากับคลังกีตาร์ 1969 ไฟล์ที่ meta ไม่มีประโยชน์)
+META_MAX = 60
 INSTR = {"grand piano", "piano", "guitar", "classic guitar", "classical guitar",
          "acoustic guitar", "nylon guitar", "melody", "bass", "harpsichord"}
 
@@ -51,7 +53,15 @@ def list_midis(base):
     out.sort(key=lambda x: x[0].lower())
     return out
 
-# ---------- เปียโน: .mhtml → detail.html ----------
+def is_category(folder):
+    """หมวด = มี subfolder ที่บรรจุ .mid โดยตรง (เช่น piano-classical/mozart) · กีตาร์(A-B/composer/) ไม่ใช่"""
+    for sub in os.listdir(folder):
+        sp = os.path.join(folder, sub)
+        if os.path.isdir(sp) and any(f.lower().endswith(MIDEXT) for f in os.listdir(sp)):
+            return True
+    return False
+
+# ---------- เปียโน composer: .mhtml → detail.html ----------
 def convert_mhtml(mhtml_path, folder):
     msg = email.message_from_bytes(open(mhtml_path, "rb").read())
     html_part, resources = None, {}
@@ -75,12 +85,12 @@ def convert_mhtml(mhtml_path, folder):
         b = os.path.basename(m.group(1))
         return 'href="' + (urllib.parse.quote(b) if b in local else m.group(1)) + '"'
     doc = re.sub(r'href="([^"]*\.mid)"', repl, doc, flags=re.I)
-    bar = "<div style='font-family:sans-serif;background:#eef3fb;padding:8px 12px;font-size:13px'><a href='../index.html'>← ดัชนีรวม media-sources</a></div>"
+    bar = "<div style='font-family:sans-serif;background:#eef3fb;padding:8px 12px;font-size:13px'><a href='../index.html'>← กลับ</a></div>"
     doc = re.sub(r"(<body[^>]*>)", r"\1" + bar, doc, count=1, flags=re.I) if re.search(r"<body", doc, re.I) else bar + doc
     with open(os.path.join(folder, "detail.html"), "w", encoding="utf-8") as fp:
         fp.write(doc)
 
-# ---------- Media/others/กีตาร์: meta MIDI + ชื่อไฟล์ + โฟลเดอร์ → detail.html ----------
+# ---------- meta MIDI + ชื่อไฟล์ + โฟลเดอร์ → detail.html ----------
 def derive(folder, rel, read_meta):
     title = composer = extra = ""
     if read_meta and mido:
@@ -102,8 +112,7 @@ def derive(folder, rel, read_meta):
             if tn:
                 title = tn[0]
             if tx:
-                composer = tx[0]
-                extra = " · ".join(tx[1:3])
+                composer = tx[0]; extra = " · ".join(tx[1:3])
         except Exception:
             pass
     parts = rel.replace("\\", "/").split("/")
@@ -118,7 +127,7 @@ def derive(folder, rel, read_meta):
 
 def meta_detail(folder, name, items):
     read_meta = len(items) <= META_MAX
-    src = "อ่านชื่อเพลงจาก meta ในไฟล์ MIDI" if read_meta else "ชื่อเพลงจากชื่อไฟล์ + นักประพันธ์จากโฟลเดอร์ (meta ไม่มีชื่อเพลง)"
+    src = "อ่านชื่อเพลงจาก meta ในไฟล์ MIDI" if read_meta else "ชื่อเพลงจากชื่อไฟล์ + นักประพันธ์จากโฟลเดอร์ (คลังใหญ่ · meta ไม่มีชื่อเพลง)"
     rows = ""
     for i, (rel, sz) in enumerate(items, 1):
         title, comp, extra = derive(folder, rel, read_meta)
@@ -134,7 +143,7 @@ def meta_detail(folder, name, items):
 <meta name=viewport content="width=device-width,initial-scale=1">
 <title>{html.escape(name)} — รายละเอียด</title><style>{CSS}</style></head><body>
 <h1>📁 {html.escape(name)}</h1>
-<div class=sub><b id=cnt>{len(items)}</b> ไฟล์ MIDI · รวม {human(total)} · <a href='../index.html'>← ดัชนีรวม</a></div>
+<div class=sub><b id=cnt>{len(items)}</b> ไฟล์ MIDI · รวม {human(total)} · <a href='../index.html'>← กลับ</a></div>
 <div class=bar>ℹ️ {src}</div>
 <input id=q placeholder="🔍 ค้นหาชื่อเพลง / นักประพันธ์ / โฟลเดอร์...">
 <table><thead><tr><th>#</th><th>ชื่อเพลง</th><th>นักประพันธ์</th><th class=r>ขนาด</th></tr></thead>
@@ -142,40 +151,52 @@ def meta_detail(folder, name, items):
     with open(os.path.join(folder, "detail.html"), "w", encoding="utf-8") as fp:
         fp.write(doc)
 
-def main():
-    subs = sorted(d for d in os.listdir(ROOT) if os.path.isdir(os.path.join(ROOT, d)))
-    rrows, gfiles, gtotal = "", 0, 0
-    for d in subs:
-        path = os.path.join(ROOT, d)
-        items = list_midis(path)
-        n = len(items); tot = sum(s for _, s in items)
-        gfiles += n; gtotal += tot
-        # ลบ index.html เดิมของโฟลเดอร์ (เลิกใช้ · ใช้ detail.html แทน)
-        old = os.path.join(path, "index.html")
-        if os.path.exists(old):
-            os.remove(old)
-        # สร้าง detail.html
-        src = next((f for f in sorted(os.listdir(path)) if f.lower().endswith((".mhtml", ".mht"))), None)
-        kind = ""
+# ---------- recursive: คืน (entry_html, nfiles, total, kind) ----------
+def process(folder, name, is_root=False):
+    for stale in ("index.html", "detail.html"):
+        p = os.path.join(folder, stale)
+        if os.path.exists(p):
+            os.remove(p)
+    if not is_root and not is_category(folder):
+        items = list_midis(folder)
+        total = sum(s for _, s in items)
+        src = next((f for f in sorted(os.listdir(folder)) if f.lower().endswith((".mhtml", ".mht"))), None)
         if src:
             try:
-                convert_mhtml(os.path.join(path, src), path); kind = "🎼 ต้นฉบับเว็บ"
+                convert_mhtml(os.path.join(folder, src), folder); kind = "🎼 ต้นฉบับเว็บ"
             except Exception:
-                meta_detail(path, d, items); kind = "meta/ชื่อไฟล์"
+                meta_detail(folder, name, items); kind = "meta/ชื่อไฟล์"
         else:
-            meta_detail(path, d, items); kind = "meta/ชื่อไฟล์"
-        rrows += (f"<tr><td><a href='{html.escape(d)}/detail.html'>📁 {html.escape(d)}</a></td>"
-                  f"<td class=ex>{kind}</td><td class=r>{n}</td><td class=r>{human(tot)}</td></tr>\n")
-    root = f"""<!doctype html><html lang=th><head><meta charset=utf-8>
+            meta_detail(folder, name, items)
+            kind = "meta MIDI" if len(items) <= META_MAX else "ชื่อไฟล์/โฟลเดอร์"
+        return "detail.html", len(items), total, kind
+    # หมวด (category) หรือ root → ทำ hub
+    children = sorted(d for d in os.listdir(folder) if os.path.isdir(os.path.join(folder, d)))
+    rows, cf, ct = "", 0, 0
+    for c in children:
+        entry, n, tot, kind = process(os.path.join(folder, c), c)
+        cf += n; ct += tot
+        rows += (f"<tr><td><a href='{urllib.parse.quote(c)}/{entry}'>📁 {html.escape(c)}</a></td>"
+                 f"<td class=ex>{kind}</td><td class=r>{n}</td><td class=r>{human(tot)}</td></tr>\n")
+    if is_root:
+        title = "🎼 media-sources — คลัง MIDI อ้างอิง"
+        sub = f"{len(children)} หมวด · {cf} ไฟล์ MIDI · รวม {human(ct)} · คลิกเข้าดูรายละเอียดเพลง + เล่นไฟล์ local"
+    else:
+        title = f"📂 {html.escape(name)}"
+        sub = f"{len(children)} โฟลเดอร์ · {cf} ไฟล์ MIDI · รวม {human(ct)} · <a href='../index.html'>← กลับ</a>"
+    doc = f"""<!doctype html><html lang=th><head><meta charset=utf-8>
 <meta name=viewport content="width=device-width,initial-scale=1">
-<title>media-sources — ดัชนีรวม</title><style>{CSS}</style></head><body>
-<h1>🎼 media-sources — คลัง MIDI อ้างอิง</h1>
-<div class=sub>{len(subs)} โฟลเดอร์ · {gfiles} ไฟล์ MIDI · รวม {human(gtotal)} · คลิกโฟลเดอร์ดูรายละเอียดเพลง + เล่นไฟล์ local</div>
+<title>{html.escape(name)} — ดัชนี</title><style>{CSS}</style></head><body>
+<h1>{title}</h1><div class=sub>{sub}</div>
 <table><thead><tr><th>โฟลเดอร์</th><th>ที่มาข้อมูล</th><th class=r>ไฟล์</th><th class=r>ขนาด</th></tr></thead>
-<tbody>{rrows}</tbody></table></body></html>"""
-    with open(os.path.join(ROOT, "index.html"), "w", encoding="utf-8") as fp:
-        fp.write(root)
-    print(f"เสร็จ — {len(subs)} โฟลเดอร์ · {gfiles} ไฟล์ MIDI · {human(gtotal)} · detail.html ครบทุกโฟลเดอร์")
+<tbody>{rows}</tbody></table></body></html>"""
+    with open(os.path.join(folder, "index.html"), "w", encoding="utf-8") as fp:
+        fp.write(doc)
+    return "index.html", cf, ct, ("หมวด" if not is_root else "")
+
+def main():
+    _, files, total, _ = process(ROOT, "media-sources", is_root=True)
+    print(f"เสร็จ — {files} ไฟล์ MIDI · {human(total)} · ดัชนี hub + detail.html ครบทุกชั้น")
 
 if __name__ == "__main__":
     main()
