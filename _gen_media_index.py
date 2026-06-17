@@ -151,6 +151,79 @@ def meta_detail(folder, name, items):
     with open(os.path.join(folder, "detail.html"), "w", encoding="utf-8") as fp:
         fp.write(doc)
 
+# ---------- guitar: แปลงหน้า index ที่ save (_pages/*.mhtml) → .html + แก้ลิงก์ local / มาร์ก ⬇️ ----------
+GUITAR_ANCHOR = re.compile(r'<a\b([^>]*?)href="([^"]*\.mid)"([^>]*?)>(.*?)</a>', re.I | re.S)
+
+def _guitar_localmap(folder, pages_dir):
+    m = {}
+    for dp, dn, fn in os.walk(folder):
+        if "_pages" in dp.replace("\\", "/").split("/"):
+            continue
+        for f in fn:
+            if f.lower().endswith(MIDEXT):
+                m[f] = urllib.parse.quote(os.path.relpath(os.path.join(dp, f), pages_dir).replace("\\", "/"), safe="/")
+    return m
+
+def _convert_page(mhtml_path, out_html, localmap, miss_urls):
+    msg = email.message_from_bytes(open(mhtml_path, "rb").read())
+    hp, res = None, {}
+    for part in msg.walk():
+        ct = part.get_content_type()
+        if ct.startswith("multipart"):
+            continue
+        loc = part.get("Content-Location", "")
+        if ct == "text/html" and hp is None:
+            hp = part
+        elif loc:
+            res[loc] = (ct, part.get_payload(decode=True))
+    if hp is None:
+        return 0, 0
+    doc = hp.get_payload(decode=True).decode(hp.get_content_charset() or "utf-8", "replace")
+    for loc, (ct, data) in res.items():
+        if data and loc in doc:
+            doc = doc.replace(loc, f"data:{ct};base64," + base64.b64encode(data).decode())
+    c = [0, 0]
+    def repl(m):
+        pre, url, post, text = m.groups(); b = os.path.basename(url)
+        if b in localmap:
+            c[0] += 1; return f'<a{pre}href="{localmap[b]}"{post}>{text}</a>'
+        c[1] += 1; miss_urls[b] = url
+        return f'<a{pre}href="{url}"{post} style="color:#c33" title="ยังไม่มีในเครื่อง">{text} ⬇️</a>'
+    doc = GUITAR_ANCHOR.sub(repl, doc)
+    bar = "<div style='font-family:sans-serif;background:#eef3fb;padding:8px 12px;font-size:13px'><a href='../index.html'>← กลับ</a> · 🔴⬇️ = ยังไม่มีในเครื่อง (คลิกโหลดจากเว็บ)</div>"
+    doc = re.sub(r"(<body[^>]*>)", r"\1" + bar, doc, count=1, flags=re.I) if re.search(r"<body", doc, re.I) else bar + doc
+    open(out_html, "w", encoding="utf-8").write(doc)
+    return c[0], c[1]
+
+def guitar_hub(folder, name, items):
+    pages_dir = os.path.join(folder, "_pages")
+    localmap = _guitar_localmap(folder, pages_dir)
+    miss_urls, rows = {}, ""
+    for mh in sorted(f for f in os.listdir(pages_dir) if f.lower().endswith((".mhtml", ".mht"))):
+        nm = os.path.splitext(mh)[0]
+        ok, miss = _convert_page(os.path.join(pages_dir, mh), os.path.join(pages_dir, nm + ".html"), localmap, miss_urls)
+        disp = nm.replace("Classical Guitar Midi Archives - ", "").replace("Classical Guitar Midi Archives", "หน้าหลัก")
+        badge = f"<span style='color:#c33'>⬇️ {miss}</span>" if miss else "<span style='color:#2a2'>ครบ</span>"
+        rows += (f"<tr><td><a href='_pages/{urllib.parse.quote(nm + '.html')}'>📄 {html.escape(disp)}</a></td>"
+                 f"<td class=r>{ok}</td><td class=r>{badge}</td></tr>\n")
+    with open(os.path.join(pages_dir, "_download_list.txt"), "w", encoding="utf-8") as f:
+        for b, u in sorted(miss_urls.items()):
+            f.write(u + "\n")
+    meta_detail(folder, name, items)   # รายการไฟล์ทั้งหมดในเครื่อง (ค้นหาได้)
+    total = sum(s for _, s in items)
+    doc = f"""<!doctype html><html lang=th><head><meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<title>{html.escape(name)} — ดัชนี</title><style>{CSS}</style></head><body>
+<h1>🎸 {html.escape(name)} — Classical Guitar Midi Archives</h1>
+<div class=sub>{len(items)} ไฟล์ในเครื่อง · <a href='../index.html'>← ดัชนีรวม</a></div>
+<div class=bar>🔴 <b>⬇️ N</b> = เพลงในหน้านั้นที่ยังไม่มีไฟล์ในเครื่อง (เปิดหน้าแล้วคลิก ⬇️ โหลดจากเว็บ) · รายการ URL: <code>_pages/_download_list.txt</code> ({len(miss_urls)} ไฟล์)</div>
+<table><thead><tr><th>หน้า</th><th class=r>มีในเครื่อง</th><th class=r>ต้องโหลด</th></tr></thead>
+<tbody>{rows}</tbody></table>
+<p style='font-size:13px;color:#777'>📋 <a href='detail.html'>รายการไฟล์ทั้งหมดในเครื่อง (ค้นหาได้)</a></p></body></html>"""
+    with open(os.path.join(folder, "index.html"), "w", encoding="utf-8") as fp:
+        fp.write(doc)
+    return len(items), total, len(miss_urls)
+
 # ---------- recursive: คืน (entry_html, nfiles, total, kind) ----------
 def process(folder, name, is_root=False):
     for stale in ("index.html", "detail.html"):
@@ -160,6 +233,10 @@ def process(folder, name, is_root=False):
     if not is_root and not is_category(folder):
         items = list_midis(folder)
         total = sum(s for _, s in items)
+        pages = os.path.join(folder, "_pages")
+        if os.path.isdir(pages) and any(f.lower().endswith((".mhtml", ".mht")) for f in os.listdir(pages)):
+            nf, tot, nmiss = guitar_hub(folder, name, items)
+            return "index.html", nf, tot, f"🎸 หน้าเว็บต้นฉบับ · ⬇️ {nmiss}"
         src = next((f for f in sorted(os.listdir(folder)) if f.lower().endswith((".mhtml", ".mht"))), None)
         if src:
             try:
