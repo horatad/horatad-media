@@ -3,7 +3,9 @@
 > ไฟล์เดียวบอก "โฟลเดอร์นี้คืออะไร ตอนนี้ทำอะไรค้างอยู่" · Claude อ่านก่อนเริ่ม · dashboard ดึง 6 บรรทัดแรก
 > ✓ = ตรวจจริงแล้ว · อัปเดต 2026-06-15 · รายละเอียดเต็ม → `CLAUDE.md` + memory `content-backlog.md`
 
-## ▶ ตอนนี้ (สถานะล่าสุด 16 มิ.ย. 2569)
+## ▶ ตอนนี้ (สถานะล่าสุด 17 มิ.ย. 2569)
+- 📚 **✅ ใหม่ 17 มิ.ย.: คลัง MIDI อ้างอิง `media-sources\` พร้อมใช้ (~5,980 ไฟล์ · 84MB)** — แยกจาก clips · เปียโนคลาสสิก (piano-midi.de · รายละเอียดเต็มจาก .mhtml) + กีตาร์ (classicalguitarmidi.com · **โหลดเพิ่มจากเว็บ 3,712 ไฟล์**) · ดัชนีแบบ hub ค้นหาได้ + เล่น local (`python _gen_media_index.py`) · เก็บ local (เทสเร็ว) → master อนาคตขึ้น Drive
+- 🪐 **✅ Mercury Retrograde ปรับปรุง 17 มิ.ย.** — 58วิ (มาตรฐานใหม่) · ดาว/วงโคจรขยายสำหรับมือถือ · caption ขึ้นบน · เสียงพากย์แก้ "พุธพักร/ถอยหลัง" · พร้อมอัป YouTube (รอพี่อัป)
 - 🎻 **ใหม่ 16 มิ.ย.: เสียงวงจริง BBCSO + headless render pipeline** — ติดตั้ง BBC Symphony Orchestra Discover + REAPER · `clips/_mid2rpp.py` แปลง MIDI→เสียงวงจริง **ผ่าน command line ไม่เปิดจอ** (`reaper.exe -renderproject` · รักษา timing) · ทดสอบ violin/percussion ✓ · **ค้าง:** `clips/_piano_template.rpp` ยังเป็น Percussion → เปิด REAPER ตั้งปลั๊ก track1 เป็น Piano(กด Load) → Ctrl+S ทับ template → rerun script · รายงานเต็ม `G:\My Drive\horatad-report\BGM_BBCSO_MASTERPLAN_REPORT.html` · MIDI คลัง `clips/mozart`,`clips/beethoven` + `G:\My Drive\horatad-midi\`
 - 🎧 **กำลังจูน: เพลง Shorts60 = Skaters' Waltz (loop seam)** — ค้างที่ **v03** รอพี่เคาะ
   - bgm `public/audio/skaters-waltz.mp3` (ตัด 0:47–1:34 จาก YouTube wWuccFOyayU · ลิขสิทธิ์-แต่-OK <60วิ) · source เต็มเก็บ `clips/skaters-waltz_yt-source.webm` (ลองตัดท่อนอื่นได้)
