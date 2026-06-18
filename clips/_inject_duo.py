@@ -69,19 +69,24 @@ violin = pick("violin","violino")
 piano  = pick("piano")
 print("ไวโอลิน %d events · เปียโน %d events"%(len(violin),len(piano)))
 
-def bake(evs):
+def bake(evs, setvel=None):
+    # setvel: ถ้ากำหนด → ดัน velocity โน้ตทุกตัวขึ้นเป็นค่านี้ (BBCSO dynamics=velocity
+    # → ดัง+สว่างขึ้น) · กันปัญหา section เล่นเบา-ทึบเพราะ velocity ต้นฉบับต่ำ
     baked=sorted((int(round(t2s(tk)*TPS)),by) for tk,by in evs)
     e=["        HASDATA 1 480 QN","        CCINTERP 32","        IGNTEMPO 1 120 4 4"]
     prev=0
     for rt,by in baked:
+        b=bytearray(by)
+        if setvel and (b[0]&0xf0)==0x90 and b[2]>0:   # note-on vel>0
+            b[2]=max(1,min(127,setvel))
         d=rt-prev; prev=rt
-        e.append("        E %d %s"%(d," ".join("%02x"%x for x in by)))
+        e.append("        E %d %s"%(d," ".join("%02x"%x for x in b)))
     e.append("        E %d b0 7b 00"%int(round(2*TPS)))
     dur=(max(t2s(tk) for tk,_ in evs)+1.0) if evs else 0.0
     return "\n".join(e), dur
 
-vln_src, vln_dur = bake(violin)
-pno_src, pno_dur = bake(piano)
+vln_src, vln_dur = bake(violin, setvel=115)  # BBCSO ไวโอลิน: ดัน velocity → ดัง+สว่าง
+pno_src, pno_dur = bake(piano)               # 4Front เปียโน: คง velocity เดิม
 
 def make_item(idx, src, dur):
     g="{%08X-3333-4333-8333-%012X}"%(idx,idx)
