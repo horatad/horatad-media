@@ -96,6 +96,9 @@ function draw(canvas,frame){
   // epicycle เต็มจอ — เฉพาะดาว (ไม่มีวงโคจร/เส้นเล็ง) · ตอนจบ resolve เป็นหน้ายิ้ม
   if(epiA>0.01){
     const ef=efOf(frame),[cx,cy]=EPI;
+    // label ดาวโชว์ตอน epicycle เพิ่งปรากฏ แล้วหายตอนเริ่มหมุน ~0:21 (คนรู้แล้วว่าคืออะไร)
+    const labelOp=interpolate(frame,[DISS_TO,DISS_TO+12,DISS_TO+30,DISS_TO+44],[0,1,1,0],
+      {extrapolateLeft:'clamp',extrapolateRight:'clamp'});
     const ids=['jupiter','venus','moon'];
     const orbP=id=>{const a=mAng(id,ef);return [cx+Math.cos(a)*DISP[id],cy+Math.sin(a)*DISP[id]];};
     const P=id=>{const o=orbP(id),t=SMILE[id];return [lerp(o[0],t[0],resolve),lerp(o[1],t[1],resolve)];};
@@ -104,7 +107,7 @@ function draw(canvas,frame){
     if(eA>0.02){const eg=ctx.createRadialGradient(cx,cy,0,cx,cy,22);
       eg.addColorStop(0,'#dff0ff');eg.addColorStop(1,'#5b8fd6');
       ctx.globalAlpha=eA;ctx.beginPath();ctx.arc(cx,cy,22,0,7);ctx.fillStyle=eg;ctx.fill();ctx.globalAlpha=1;
-      label2(ctx,'โลก',cx,cy+26,'rgba(200,220,255,'+(0.9*eA)+')',22,700);}
+      if(labelOp>0.01)label2(ctx,'โลก',cx,cy+26,'rgba(200,220,255,'+(0.9*eA*labelOp)+')',22,700);}
     ids.forEach(id=>{const [x,y]=P(id);
       if(id==='moon'){
         // เฟสจากมุมห่างดวงอาทิตย์ (elongation) — เริ่มเสี้ยวบาง → วนครบเฟส · ตอน resolve = เสี้ยวยิ้ม
@@ -112,10 +115,10 @@ function draw(canvas,frame){
         const cosA=lerp(-Math.cos(E), SMILE_COSA, resolve);
         const bA=lerp((S0-0.28*ef)*Math.PI/180, SMILE_BA, resolve);
         moonDisk(ctx,x,y,lerp(40,MR,resolve),cosA,bA,epiA);
-        label2(ctx,'พระจันทร์',x,y+lerp(46,MR+10,resolve),'rgba(223,231,255,'+epiA+')',22,700);}
+        if(labelOp>0.01)label2(ctx,'พระจันทร์',x,y+lerp(46,MR+10,resolve),'rgba(223,231,255,'+(epiA*labelOp)+')',22,700);}
       else{const big=id==='venus';
         planet(ctx,x,y,lerp(big?12:9,big?7:4.8,resolve),big?'rgba(255,248,225,1)':'rgba(255,232,185,1)',big?5:4,epiA);
-        label2(ctx,PLANET_TH[id],x+18,y-12,(big?'rgba(255,245,215,':'rgba(255,224,170,')+epiA+')',22,700,'left');}
+        if(labelOp>0.01)label2(ctx,PLANET_TH[id],x+18,y-12,(big?'rgba(255,245,215,':'rgba(255,224,170,')+(epiA*labelOp)+')',22,700,'left');}
     });
   }
 
