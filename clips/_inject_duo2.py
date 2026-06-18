@@ -62,8 +62,35 @@ def pick(*keys):
 violin=pick("violin","violino"); piano=pick("piano")
 print("ไวโอลิน %d ev · เปียโน %d ev"%(len(violin),len(piano)))
 
-def bake(evs):
-    baked=sorted((int(round(t2s(tk)*TPS)),by) for tk,by in evs)
+import math
+def bake(evs, vibrato=False, vib_hz=5.5, vib_cents=17):
+    baked=[(int(round(t2s(tk)*TPS)),by) for tk,by in evs]
+    if vibrato and baked:
+        # ฉีด vibrato: pitchbend LFO ไซน์ ขณะมีโน้ตค้าง (กัน organ drone)
+        # ติดตามโน้ตที่ค้างอยู่ → ใส่ pitchbend เฉพาะตอนมีเสียง
+        depth=int(8192*vib_cents/200.0)  # สมมติ pitchbend range ±2 semitone
+        onate=sorted(baked,key=lambda x:x[0])
+        active=0; spans=[]; start=None
+        for rt,by in onate:
+            s=by[0]&0xf0
+            if s==0x90 and by[2]>0:
+                if active==0: start=rt
+                active+=1
+            elif s==0x80 or (s==0x90 and by[2]==0):
+                active=max(0,active-1)
+                if active==0 and start is not None: spans.append((start,rt)); start=None
+        if start is not None: spans.append((start,onate[-1][0]))
+        STEP=48  # ~50ms (20 จุด/วิ)
+        for a,b in spans:
+            if b-a<STEP: continue
+            t=a
+            while t<=b:
+                val=8192+int(depth*math.sin(2*math.pi*vib_hz*(t/TPS)))
+                val=max(0,min(16383,val))
+                baked.append((t,bytes([0xe0,val&0x7f,(val>>7)&0x7f])))
+                t+=STEP
+        baked.append((0,bytes([0xe0,0x00,0x40])))  # center ตอนเริ่ม
+    baked.sort(key=lambda x:x[0])
     e=["        HASDATA 1 480 QN","        CCINTERP 32","        IGNTEMPO 1 120 4 4"]
     prev=0
     for rt,by in baked:
@@ -73,7 +100,9 @@ def bake(evs):
     dur=(max(t2s(tk) for tk,_ in evs)+1.0) if evs else 0.0
     return "\n".join(e),dur
 
-vsrc,vdur=bake(violin); psrc,pdur=bake(piano)
+import os
+VIB = os.environ.get("VIB","0")=="1"   # VSCO2 Arco Vib มี vibrato จริงแล้ว → default ไม่ฉีด
+vsrc,vdur=bake(violin, vibrato=VIB); psrc,pdur=bake(piano)
 def item(idx,src,dur):
     g="{%08X-5555-4555-8555-%012X}"%(idx,idx)
     return "\n".join(["    <ITEM","      POSITION 0","      SNAPOFFS 0","      LENGTH %.6f"%(dur+2),
