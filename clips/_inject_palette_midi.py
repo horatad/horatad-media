@@ -69,9 +69,22 @@ total_sec = (max(t2s(tk) for tk, _ in evs) + 1.0) if evs else 2.0
 item_len = total_sec + 2.0
 STEP = 13.0   # ระยะเหลื่อมเวลาต่อ track (วิ) — render รวดเดียวแล้วตัดแยกตาม STEP นี้
 
-# เครื่องที่ช่วงเสียงไม่ตรงโน้ตทดสอบ → เลื่อนอ็อกเทฟ (0-based track index : semitone)
-#   4=Basses (ต่ำ) -12 · 11=Piccolo (สูง) +24
-TRANSPOSE = {4: -12, 11: 24}
+# เลื่อนอ็อกเทฟให้แต่ละเครื่องเล่นใน "ช่วงเสียงถนัด" ของมัน (โน้ตฐาน G3-A4)
+# → เครื่องตระกูลเดียวกันจะได้ไม่ฟังเหมือนกัน + ได้คาแรกเตอร์จริงของเครื่อง
+# จับคู่ตามชื่อ track (เรียงเจาะจงก่อน เช่น bassoon/bass trombone ก่อน bass)
+SHIFT_RULES = [
+    ("piccolo", 24), ("bassoon", -12), ("bass trombone", -12),
+    ("tenor trombone", 0), ("trombone", 0),
+    ("violin", 12), ("viola", 0), ("cello", -12), ("bass", -24),
+    ("horn", 0), ("trumpet", 12), ("tuba", -12),
+    ("flute", 12), ("oboe", 12), ("clarinet", 0),
+    ("harp", 12),  # percussion/piano/อื่น ๆ = 0
+]
+def shift_for(name):
+    nl = (name or "").lower()
+    for kw, sh in SHIFT_RULES:
+        if kw in nl: return sh
+    return 0
 
 def build_src(shift):
     e = ["        HASDATA 1 480 QN", "        CCINTERP 32", "        IGNTEMPO 1 120 4 4"]
@@ -85,7 +98,7 @@ def build_src(shift):
     e.append("        E %d b0 7b 00" % int(round(2 * TPS)))
     return "\n".join(e)
 
-def make_item(idx):
+def make_item(idx, shift):
     g1 = "{%08X-1111-4111-8111-%012X}" % (idx, idx)
     g2 = "{%08X-2222-4222-8222-%012X}" % (idx, idx)
     return "\n".join([
@@ -108,22 +121,27 @@ def make_item(idx):
         "      CHANMODE 0",
         "      GUID %s" % g2,
         "      <SOURCE MIDI",
-        build_src(TRANSPOSE.get(idx, 0)),
+        build_src(shift),
         "      >",
         "    >",
     ])
 
 # ---- แทรก item ก่อนบรรทัดปิด track ("  >" = 2 ช่องว่าง) ----
 lines = open(SRC, encoding="utf-8", errors="ignore").read().split("\n")
-out = []; in_track = False; idx = 0; inserted = 0
+out = []; in_track = False; idx = 0; inserted = 0; tname = None
 for ln in lines:
     if ln.startswith("  <TRACK"):
-        in_track = True
+        in_track = True; tname = None
+    if in_track and tname is None:
+        m = re.match(r'\s*NAME "?(.*?)"?\s*$', ln)
+        if m: tname = m.group(1)
     if in_track and re.match(r"\s*MUTESOLO ", ln):
         ln = "    MUTESOLO 0 0 0"   # เปิดเสียงทุก track (ไม่ mute/solo) — เล่นครบในไทม์ไลน์เดียว
     if in_track and ln == "  >":
-        out.append(make_item(idx)); inserted += 1; idx += 1
-        in_track = False
+        sh = shift_for(tname)
+        out.append(make_item(idx, sh))
+        print("   %2d. %-18s shift %+d" % (idx + 1, tname, sh))
+        inserted += 1; idx += 1; in_track = False
     out.append(ln)
 
 open(OUT, "w", encoding="utf-8").write("\n".join(out))
