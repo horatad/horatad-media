@@ -20,7 +20,8 @@ const SLIDE_FROM=T.SEG[3].from, SLIDE_TO=T.SEG[4].from;
 const EPI=[540,720];                                  // ศูนย์ epicycle (ใหญ่ เต็ม 2/3 บน)
 const DISP={moon:160,venus:300,jupiter:440};          // รัศมีแสดงผล (ใกล้→ไกล)
 const RATE={moon:3.743,venus:0.28,jupiter:0.02361};   // rate เฉลี่ยจริง (deferent) — อัตราส่วน 158:12:1
-const S0=-90, EAMP=38;                                // มุมเริ่ม(ชี้ขึ้น=เรียง) · แอมพลิจูดดริฟต์
+const S0=-90, ESPEED=0.13;                            // มุมเริ่ม(ชี้ขึ้น=เรียง) · ความเร็ว (จันทร์โคจรเดินหน้า ~1 รอบ)
+const BACK_FROM=T.SEG[10].from, BACK_TO=T.VO_END;     // ช่วงหน้ายิ้มเลื่อนกลับขึ้นกลาง (ตอนจบ)
 const BMC=[540,1500];                                 // ศูนย์หน้ายิ้มเมื่อเลื่อนลง (กลาง 1/3 ล่าง · เลี่ยง UI)
 const lerp=(a,b,t)=>a+(b-a)*t, sstep=t=>t*t*(3-2*t);
 const clampI=(f,a,b,c,d)=>interpolate(f,[a,b,c,d],[0,1,1,0],{extrapolateLeft:'clamp',extrapolateRight:'clamp'});
@@ -49,11 +50,8 @@ function label(ctx,t,x,y,col,size,w,align){
   ctx.textAlign=align||'center';ctx.textBaseline='top';ctx.fillText(t,x,y);
 }
 
-// ef: เรียง(0) ช่วง seg4-6 → ดริฟต์(EAMP) ช่วง seg7-9 → reverse กลับ 0 ที่ VO_END → ค้าง 0 ถึงจบ
-function efOf(frame){
-  return interpolate(frame,[SLIDE_TO,T.SEG[6].end,T.SEG[9].from,T.VO_END],[0,0,EAMP,0],
-    {extrapolateLeft:'clamp',extrapolateRight:'clamp'});
-}
+// ef: เดินหน้าอย่างเดียว (จันทร์ไม่ถอยหลัง) — เริ่มเรียงแนว(ef=0) แล้วจันทร์โคจรเดินหน้าโชว์ความเร็ว
+function efOf(frame){ return Math.max(0,(frame-SLIDE_TO))*ESPEED; }
 const mAng=(id,ef)=>(S0-RATE[id]*ef)*Math.PI/180;
 
 function drawEpicycle(ctx,frame,op,sky){
@@ -98,7 +96,9 @@ function draw(canvas,frame){
     ctx.fillStyle='#dce6ff';ctx.beginPath();ctx.arc(s.x*W,s.y*H,s.r,0,7);ctx.fill();});
   ctx.globalAlpha=1;
 
-  const slide=sstep(interpolate(frame,[SLIDE_FROM,SLIDE_TO],[0,1],{extrapolateLeft:'clamp',extrapolateRight:'clamp'}));
+  // slide: 0=เต็มจอ · 1=ลงครึ่งล่าง+มี epicycle · ตอนจบ(seg10) เลื่อนกลับขึ้นกลาง=หน้ายิ้มเต็มเป็นภาพจบ
+  const slide=sstep(interpolate(frame,[SLIDE_FROM,SLIDE_TO,BACK_FROM,BACK_TO],[0,1,1,0],
+    {extrapolateLeft:'clamp',extrapolateRight:'clamp'}));
   const s=lerp(1,0.46,slide);
   const tcx=lerp(BC[0],BMC[0],slide), tcy=lerp(BC[1],BMC[1],slide);
   const TP=([x,y])=>[tcx+(x-BC[0])*s, tcy+(y-BC[1])*s];
