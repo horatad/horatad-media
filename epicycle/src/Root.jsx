@@ -23,6 +23,7 @@ import {VenusPhaseVert} from './scenes/VenusPhaseVert.jsx';
 import {VenusBrightestVert} from './scenes/VenusBrightestVert.jsx';
 import {OppositionVert} from './scenes/OppositionVert.jsx';
 import {EclipseStoryVert} from './scenes/EclipseStoryVert.jsx';
+import {SmileyFace} from './scenes/SmileyFace.jsx';
 import {DURATION as SHORTS60_FRAMES} from './timing.js';
 const FRAMES=2700;
 export const RemotionRoot=()=>(
@@ -51,5 +52,6 @@ export const RemotionRoot=()=>(
     <Composition id="VenusBrightestVert" component={VenusBrightestVert} durationInFrames={1770} fps={30} width={1080} height={1920}/>
     <Composition id="OppositionVert" component={OppositionVert} durationInFrames={1770} fps={30} width={1080} height={1920}/>
     <Composition id="EclipseStoryVert" component={EclipseStoryVert} durationInFrames={1770} fps={30} width={1080} height={1920}/>
+    <Composition id="SmileyFace" component={SmileyFace} durationInFrames={450} fps={30} width={1080} height={1920}/>
   </>
 );
