@@ -1,6 +1,5 @@
 import {useCurrentFrame,AbsoluteFill,interpolate} from 'remotion';
 import {useRef,useLayoutEffect} from 'react';
-import {PLANETS,gP} from '../physics.js';
 import {Caption} from '../Caption.jsx';
 import {Narration} from '../Narration.jsx';
 import {Music} from '../Music.jsx';
@@ -8,8 +7,9 @@ import {Credit} from '../Credit.jsx';
 import * as T from '../timing-smiley.js';
 
 // ── "จันทร์ยิ้ม" (Shorts 1080×1920) ──
-// 1/3 แรก: ภาพท้องฟ้าหน้ายิ้มเต็มจอ → เลื่อนลง 1/3 ล่าง · ครึ่ง/2-ใน-3 บน = epicycle ใหญ่ เคลื่อนไหว
-//   (โลกกลาง · จันทร์เสี้ยว/ศุกร์/พฤหัส โคจร แกว่งเข้าเรียงแนวเดียว=หน้ายิ้ม แล้วแยกออก)
+// 1/3 แรก: ท้องฟ้าหน้ายิ้มเต็มจอ → เลื่อนลง 1/3 ล่าง · 2/3 บน = epicycle ใหญ่
+// epicycle: rate เฉลี่ยจริง (จันทร์ 13°/วัน · ศุกร์ 1°/วัน · พฤหัส 0.08°/วัน = 158:12:1)
+//   เรียงแนวเดียว(ตอน seg4-6 + ตอนจบ) → ดริฟต์โชว์ความเร็วต่างกัน(seg7-9) → reverse กลับเรียง+ค้างถึงจบเครดิต
 const W=1080,H=1920;
 const STARS=Array.from({length:90},(_,i)=>({
   x:Math.sin(i*127.1)*.5+.5, y:(Math.sin(i*311.7)*.5+.5), r:i%13===0?1.1:0.6, tw:i*0.41
@@ -17,24 +17,24 @@ const STARS=Array.from({length:90},(_,i)=>({
 const VENUS=[442,805], JUP=[652,838], MOON=[548,1095], MR=78;
 const BC=[547,913];
 const SLIDE_FROM=T.SEG[3].from, SLIDE_TO=T.SEG[4].from;
-const EPI=[540,730];                                 // ศูนย์ epicycle (ใหญ่ เต็ม 2/3 บน)
-const DISP={moon:155,venus:310,jupiter:445};         // รัศมีแสดงผล (ใกล้→ไกล)
-const ESPEED=0.06;
-const BMC=[540,1560];                                // ศูนย์หน้ายิ้มเมื่อเลื่อนลง (1/3 ล่าง)
-const lerp=(a,b,t)=>a+(b-a)*t;
-const sstep=t=>t*t*(3-2*t);
+const EPI=[540,720];                                  // ศูนย์ epicycle (ใหญ่ เต็ม 2/3 บน)
+const DISP={moon:160,venus:300,jupiter:440};          // รัศมีแสดงผล (ใกล้→ไกล)
+const RATE={moon:3.743,venus:0.28,jupiter:0.02361};   // rate เฉลี่ยจริง (deferent) — อัตราส่วน 158:12:1
+const S0=-90, EAMP=38;                                // มุมเริ่ม(ชี้ขึ้น=เรียง) · แอมพลิจูดดริฟต์
+const BMC=[540,1500];                                 // ศูนย์หน้ายิ้มเมื่อเลื่อนลง (กลาง 1/3 ล่าง · เลี่ยง UI)
+const lerp=(a,b,t)=>a+(b-a)*t, sstep=t=>t*t*(3-2*t);
 const clampI=(f,a,b,c,d)=>interpolate(f,[a,b,c,d],[0,1,1,0],{extrapolateLeft:'clamp',extrapolateRight:'clamp'});
 
-function planet(ctx,x,y,coreR,col){
+// ขนาด/ความสว่างตามที่เห็นจริงจากโลก: จันทร์ = จานใหญ่ · ศุกร์ สว่างสุด(−4.1) · พฤหัส รองลงมา(−2.0)
+function planet(ctx,x,y,coreR,col,bloom){
   ctx.save();
-  ctx.filter='blur(10px)';ctx.globalAlpha=0.45;ctx.fillStyle=col;
-  ctx.beginPath();ctx.arc(x,y,coreR*4,0,7);ctx.fill();
-  ctx.filter='blur(3px)';ctx.globalAlpha=0.8;ctx.beginPath();ctx.arc(x,y,coreR*1.7,0,7);ctx.fill();
+  ctx.filter='blur(10px)';ctx.globalAlpha=0.5;ctx.fillStyle=col;
+  ctx.beginPath();ctx.arc(x,y,coreR*(bloom||4),0,7);ctx.fill();
+  ctx.filter='blur(3px)';ctx.globalAlpha=0.85;ctx.beginPath();ctx.arc(x,y,coreR*1.7,0,7);ctx.fill();
   ctx.filter='none';ctx.globalAlpha=1;
   ctx.fillStyle='#fffdf6';ctx.beginPath();ctx.arc(x,y,coreR,0,7);ctx.fill();
   ctx.restore();
 }
-// จันทร์เสี้ยว: เหลือเฉพาะเสี้ยวสว่าง · ด้านมืดกลืนพื้น (carve ด้วยสีพื้น) · ไม่มีเส้นขอบ/halo
 function crescent(ctx,x,y,r,sky){
   const off=r*0.60;
   ctx.save();ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.clip();
@@ -49,39 +49,45 @@ function label(ctx,t,x,y,col,size,w,align){
   ctx.textAlign=align||'center';ctx.textBaseline='top';ctx.fillText(t,x,y);
 }
 
-// epicycle ใหญ่ครึ่งบน
+// ef: เรียง(0) ช่วง seg4-6 → ดริฟต์(EAMP) ช่วง seg7-9 → reverse กลับ 0 ที่ VO_END → ค้าง 0 ถึงจบ
+function efOf(frame){
+  return interpolate(frame,[SLIDE_TO,T.SEG[6].end,T.SEG[9].from,T.VO_END],[0,0,EAMP,0],
+    {extrapolateLeft:'clamp',extrapolateRight:'clamp'});
+}
+const mAng=(id,ef)=>(S0-RATE[id]*ef)*Math.PI/180;
+
 function drawEpicycle(ctx,frame,op,sky){
   if(op<=0.01)return;
-  const ALIGN=T.SEG[6].from, ef=(frame-ALIGN)*ESPEED, [cx,cy]=EPI;
-  const defs={moon:'#dfe7ff',venus:'#9fd2ff',jupiter:'#ffbf6a'};
+  const ef=efOf(frame), [cx,cy]=EPI;
+  const defs={moon:'#dfe7ff',venus:'#bfe0ff',jupiter:'#ffbf6a'};
   const ids=['jupiter','venus','moon'];
-  const ang=id=>{const p=PLANETS.find(q=>q.id===id);const r=gP(p,ef);return Math.atan2(r.y,r.x);};
-  const A=ids.map(ang);const spread=Math.max(...A)-Math.min(...A);
-  const aligned=Math.max(0,1-Math.abs(((spread+Math.PI)%(2*Math.PI))-Math.PI)/0.6);
+  const A=ids.map(id=>mAng(id,ef));const spread=Math.max(...A)-Math.min(...A);
+  const aligned=Math.max(0,1-Math.abs(((spread+Math.PI)%(2*Math.PI))-Math.PI)/0.55);
   ctx.save();ctx.globalAlpha=op;
   ids.forEach(id=>{ctx.beginPath();ctx.arc(cx,cy,DISP[id],0,7);
     ctx.strokeStyle='rgba(160,180,225,0.26)';ctx.lineWidth=1.3;ctx.setLineDash([4,10]);ctx.stroke();ctx.setLineDash([]);});
-  ids.forEach(id=>{const a=ang(id);const Lx=cx+Math.cos(a)*500,Ly=cy+Math.sin(a)*500;
-    ctx.globalAlpha=op*(0.32+0.5*aligned);ctx.strokeStyle=defs[id];ctx.lineWidth=2;ctx.setLineDash([6,8]);
+  ids.forEach(id=>{const a=mAng(id,ef);const Lx=cx+Math.cos(a)*500,Ly=cy+Math.sin(a)*500;
+    ctx.globalAlpha=op*(0.30+0.5*aligned);ctx.strokeStyle=defs[id];ctx.lineWidth=2;ctx.setLineDash([6,8]);
     ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(Lx,Ly);ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=op;});
-  ids.forEach(id=>{const a=ang(id),R=DISP[id],x=cx+Math.cos(a)*R,y=cy+Math.sin(a)*R;
-    if(id==='moon'){ crescent(ctx,x,y,34,sky);
-      label(ctx,'จันทร์',x,y+40,defs.moon,24,700);
-    }else{
-      ctx.strokeStyle='rgba(255,255,255,.22)';ctx.lineWidth=.9;
-      ctx.beginPath();ctx.arc(x,y,id==='jupiter'?19:16,0,7);ctx.stroke();
-      ctx.fillStyle=defs[id];ctx.shadowColor=defs[id];ctx.shadowBlur=16;
-      ctx.beginPath();ctx.arc(x,y,id==='jupiter'?10:9,0,7);ctx.fill();ctx.shadowBlur=0;
-      label(ctx,PLANETS.find(q=>q.id===id).th,x+16,y-12,defs[id],24,700,'left');
+  ids.forEach(id=>{const a=mAng(id,ef),R=DISP[id],x=cx+Math.cos(a)*R,y=cy+Math.sin(a)*R;
+    if(id==='moon'){ crescent(ctx,x,y,32,sky); label(ctx,'จันทร์',x,y+38,defs.moon,24,700);}
+    else{
+      const big=id==='venus';   // ศุกร์สว่าง/ใหญ่กว่าพฤหัส (apparent)
+      ctx.strokeStyle='rgba(255,255,255,.20)';ctx.lineWidth=.9;
+      ctx.beginPath();ctx.arc(x,y,big?17:14,0,7);ctx.stroke();
+      ctx.fillStyle=defs[id];ctx.shadowColor=defs[id];ctx.shadowBlur=big?20:13;
+      ctx.beginPath();ctx.arc(x,y,big?10:7,0,7);ctx.fill();ctx.shadowBlur=0;
+      label(ctx,PLANET_TH[id],x+16,y-12,defs[id],24,700,'left');
     }});
   const eg=ctx.createRadialGradient(cx,cy,0,cx,cy,22);
   eg.addColorStop(0,'#dff0ff');eg.addColorStop(1,'#5b8fd6');
   ctx.beginPath();ctx.arc(cx,cy,22,0,7);ctx.fillStyle=eg;ctx.fill();
   label(ctx,'โลก',cx,cy+26,'rgba(200,220,255,.92)',22,700);
-  if(aligned>0.3){ctx.globalAlpha=op*aligned;
+  if(aligned>0.35){ctx.globalAlpha=op*aligned;
     label(ctx,'เรียงแนวเดียว → เห็นเป็นหน้ายิ้ม',cx,cy+DISP.jupiter+16,'#ffe08a',24,800);ctx.globalAlpha=op;}
   ctx.restore();
 }
+const PLANET_TH={venus:'ศุกร์',jupiter:'พฤหัส'};
 
 function draw(canvas,frame){
   const ctx=canvas.getContext('2d');
@@ -93,26 +99,25 @@ function draw(canvas,frame){
   ctx.globalAlpha=1;
 
   const slide=sstep(interpolate(frame,[SLIDE_FROM,SLIDE_TO],[0,1],{extrapolateLeft:'clamp',extrapolateRight:'clamp'}));
-  const s=lerp(1,0.42,slide);
+  const s=lerp(1,0.46,slide);
   const tcx=lerp(BC[0],BMC[0],slide), tcy=lerp(BC[1],BMC[1],slide);
   const TP=([x,y])=>[tcx+(x-BC[0])*s, tcy+(y-BC[1])*s];
   const tw=1+0.06*Math.sin(frame*0.10);
 
   drawEpicycle(ctx,frame,slide,sky);
 
-  // หน้ายิ้ม (สเกล/เลื่อนตาม slide)
+  // หน้ายิ้ม — ขนาด "ตามที่เห็นจริง": จันทร์จานใหญ่ · ศุกร์สว่างสุด · พฤหัสรองลงมา
   const [vx,vy]=TP(VENUS),[jx,jy]=TP(JUP),[mx,my]=TP(MOON), mr=MR*s;
-  planet(ctx,vx,vy,4.6*s*tw,'rgba(255,248,225,1)');
-  planet(ctx,jx,jy,3.4*s*tw,'rgba(255,232,185,1)');
-  crescent(ctx,mx,my,mr,sky);
+  planet(ctx,vx,vy,7*tw,'rgba(255,248,225,1)',5);      // ศุกร์ สว่างสุด
+  planet(ctx,jx,jy,4.8*tw,'rgba(255,232,185,1)',4);    // พฤหัส รองลงมา
+  crescent(ctx,mx,my,mr,sky);                          // จันทร์ จานใหญ่
   const lab=clampI(frame,T.SEG[1].from,T.SEG[1].from+15,SLIDE_FROM-5,SLIDE_FROM)*0.85;
   if(lab>0.02){ctx.globalAlpha=lab;
-    label(ctx,'ศุกร์',vx,vy+16,'rgba(255,245,215,.9)',22,600);
-    label(ctx,'พฤหัส',jx,jy+14,'rgba(255,230,180,.85)',22,600);
+    label(ctx,'ศุกร์',vx,vy+18,'rgba(255,245,215,.9)',22,600);
+    label(ctx,'พฤหัส',jx,jy+16,'rgba(255,230,180,.85)',22,600);
     label(ctx,'จันทร์',mx,my+mr+10,'rgba(223,231,255,.9)',22,600);
     ctx.globalAlpha=1;}
 
-  // หัวข้อบนสุด
   ctx.textAlign='center';ctx.textBaseline='alphabetic';
   ctx.shadowColor='rgba(0,0,0,0.6)';ctx.shadowBlur=12;
   ctx.fillStyle='#fff';ctx.font='800 64px sans-serif';ctx.fillText('จันทร์ยิ้ม',W/2,96);
