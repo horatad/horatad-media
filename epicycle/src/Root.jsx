@@ -52,6 +52,6 @@ export const RemotionRoot=()=>(
     <Composition id="VenusBrightestVert" component={VenusBrightestVert} durationInFrames={1770} fps={30} width={1080} height={1920}/>
     <Composition id="OppositionVert" component={OppositionVert} durationInFrames={1770} fps={30} width={1080} height={1920}/>
     <Composition id="EclipseStoryVert" component={EclipseStoryVert} durationInFrames={1770} fps={30} width={1080} height={1920}/>
-    <Composition id="SmileyFace" component={SmileyFace} durationInFrames={450} fps={30} width={1080} height={1920}/>
+    <Composition id="SmileyFace" component={SmileyFace} durationInFrames={1770} fps={30} width={1080} height={1920}/>
   </>
 );
