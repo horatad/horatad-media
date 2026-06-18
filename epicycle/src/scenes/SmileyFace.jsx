@@ -38,15 +38,21 @@ function planet(ctx,x,y,coreR,col,bloom,ga){
   ctx.fillStyle='#fffdf6';ctx.beginPath();ctx.arc(x,y,coreR,0,7);ctx.fill();
   ctx.restore();
 }
-function crescent(ctx,x,y,r,sky,ga){
-  ctx.save();ctx.globalAlpha=ga==null?1:ga;
-  ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.clip();
-  const lit=ctx.createLinearGradient(0,y+r,0,y-r*0.2);
-  lit.addColorStop(0,'#fefaee');lit.addColorStop(0.7,'#ece4cf');lit.addColorStop(1,'#cfc8b2');
-  ctx.fillStyle=lit;ctx.fillRect(x-r,y-r,2*r,2*r);
-  ctx.globalAlpha=1;ctx.fillStyle=sky;ctx.beginPath();ctx.arc(x,y-r*0.60,r,0,7);ctx.fill();
-  ctx.restore();
+// วาดจันทร์ตามเฟส (วาดเฉพาะด้านสว่าง บนพื้นมืด = ไม่มีขอบจาน) — MoonPhaseVert style
+// cosA: -1=ดับ(ใหม่) · 0=ครึ่งดวง · +1=เพ็ญ · brightAngle: ทิศด้านสว่างหัน
+function moonDisk(ctx,x,y,r,cosA,brightAngle,ga){
+  ctx.save();ctx.globalAlpha=ga==null?1:ga;ctx.translate(x,y);ctx.rotate(brightAngle);
+  const xt=r*cosA;
+  ctx.beginPath();
+  ctx.arc(0,0,r,-Math.PI/2,Math.PI/2,false);
+  ctx.ellipse(0,0,Math.abs(xt),r,0,Math.PI/2,-Math.PI/2,xt>0?false:true);
+  ctx.closePath();
+  const g=ctx.createLinearGradient(-r,0,r,0);
+  g.addColorStop(0,'#cfc9b6');g.addColorStop(1,'#fffef7');
+  ctx.fillStyle=g;ctx.fill();ctx.restore();
 }
+// เสี้ยวยิ้ม (ปลายชี้ขึ้น) — ใช้ต้นคลิป + ตอนจบ
+const SMILE_COSA=-0.72, SMILE_BA=Math.PI/2;
 function label(ctx,t,x,y,col,size,w,align){
   ctx.fillStyle=col;ctx.font=(w||600)+' '+size+'px sans-serif';
   ctx.textAlign=align||'center';ctx.textBaseline='top';ctx.fillText(t,x,y);
@@ -55,7 +61,7 @@ function drawSmiley(ctx,sky,ga,tw){
   if(ga<=0.01)return;
   planet(ctx,SMILE.venus[0],SMILE.venus[1],7*tw,'rgba(255,248,225,1)',5,ga);
   planet(ctx,SMILE.jupiter[0],SMILE.jupiter[1],4.8*tw,'rgba(255,232,185,1)',4,ga);
-  crescent(ctx,SMILE.moon[0],SMILE.moon[1],MR,sky,ga);
+  moonDisk(ctx,SMILE.moon[0],SMILE.moon[1],MR,SMILE_COSA,SMILE_BA,ga);
 }
 function efOf(frame){ return Math.max(0,(frame-DISS_TO))*ESPEED; }
 const mAng=(id,ef)=>(S0-RATE[id]*ef)*Math.PI/180;
@@ -100,7 +106,12 @@ function draw(canvas,frame){
       ctx.globalAlpha=eA;ctx.beginPath();ctx.arc(cx,cy,22,0,7);ctx.fillStyle=eg;ctx.fill();ctx.globalAlpha=1;
       label2(ctx,'โลก',cx,cy+26,'rgba(200,220,255,'+(0.9*eA)+')',22,700);}
     ids.forEach(id=>{const [x,y]=P(id);
-      if(id==='moon'){crescent(ctx,x,y,lerp(40,MR,resolve),sky,epiA);
+      if(id==='moon'){
+        // เฟสจากมุมห่างดวงอาทิตย์ (elongation) — เริ่มเสี้ยวบาง → วนครบเฟส · ตอน resolve = เสี้ยวยิ้ม
+        const Edeg=30+3.463*ef, E=Edeg*Math.PI/180;
+        const cosA=lerp(-Math.cos(E), SMILE_COSA, resolve);
+        const bA=lerp((S0-0.28*ef)*Math.PI/180, SMILE_BA, resolve);
+        moonDisk(ctx,x,y,lerp(40,MR,resolve),cosA,bA,epiA);
         label2(ctx,'จันทร์',x,y+lerp(46,MR+10,resolve),'rgba(223,231,255,'+epiA+')',22,700);}
       else{const big=id==='venus';
         planet(ctx,x,y,lerp(big?12:9,big?7:4.8,resolve),big?'rgba(255,248,225,1)':'rgba(255,232,185,1)',big?5:4,epiA);
