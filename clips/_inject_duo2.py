@@ -63,8 +63,12 @@ violin=pick("violin","violino"); piano=pick("piano")
 print("ไวโอลิน %d ev · เปียโน %d ev"%(len(violin),len(piano)))
 
 import math
-def bake(evs, vibrato=False, vib_hz=5.5, vib_cents=17):
-    baked=[(int(round(t2s(tk)*TPS)),by) for tk,by in evs]
+LEAD=4.0  # เลื่อนเพลงเริ่มที่ 4วิ + warm-up note → ให้ VSCO2 โหลด sample ทัน (กันโน้ตดรอป)
+def bake(evs, vibrato=False, vib_hz=5.5, vib_cents=17, lead=0.0, warmup=False):
+    baked=[(int(round((t2s(tk)+lead)*TPS)),by) for tk,by in evs]
+    if warmup and lead>0:  # โน้ต warm-up (A3) ค้างช่วง lead ให้ engine โหลด แล้วตัดทิ้งทีหลัง
+        baked.append((0,bytes([0x90,57,90])))
+        baked.append((int((lead-0.5)*TPS),bytes([0x80,57,0])))
     if vibrato and baked:
         # ฉีด vibrato: pitchbend LFO ไซน์ ขณะมีโน้ตค้าง (กัน organ drone)
         # ติดตามโน้ตที่ค้างอยู่ → ใส่ pitchbend เฉพาะตอนมีเสียง
@@ -97,12 +101,14 @@ def bake(evs, vibrato=False, vib_hz=5.5, vib_cents=17):
         d=rt-prev; prev=rt
         e.append("        E %d %s"%(d," ".join("%02x"%x for x in by)))
     e.append("        E %d b0 7b 00"%int(round(2*TPS)))
-    dur=(max(t2s(tk) for tk,_ in evs)+1.0) if evs else 0.0
+    dur=(max(t2s(tk) for tk,_ in evs)+1.0+lead) if evs else 0.0
     return "\n".join(e),dur
 
 import os
 VIB = os.environ.get("VIB","0")=="1"   # VSCO2 Arco Vib มี vibrato จริงแล้ว → default ไม่ฉีด
-vsrc,vdur=bake(violin, vibrato=VIB); psrc,pdur=bake(piano)
+LD = LEAD if os.environ.get("WARMUP","1")=="1" else 0.0
+vsrc,vdur=bake(violin, vibrato=VIB, lead=LD, warmup=True)
+psrc,pdur=bake(piano, lead=LD)
 def item(idx,src,dur):
     g="{%08X-5555-4555-8555-%012X}"%(idx,idx)
     return "\n".join(["    <ITEM","      POSITION 0","      SNAPOFFS 0","      LENGTH %.6f"%(dur+2),
