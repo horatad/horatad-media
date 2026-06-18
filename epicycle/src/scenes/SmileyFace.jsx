@@ -112,7 +112,7 @@ function draw(canvas,frame){
         const cosA=lerp(-Math.cos(E), SMILE_COSA, resolve);
         const bA=lerp((S0-0.28*ef)*Math.PI/180, SMILE_BA, resolve);
         moonDisk(ctx,x,y,lerp(40,MR,resolve),cosA,bA,epiA);
-        label2(ctx,'จันทร์',x,y+lerp(46,MR+10,resolve),'rgba(223,231,255,'+epiA+')',22,700);}
+        label2(ctx,'พระจันทร์',x,y+lerp(46,MR+10,resolve),'rgba(223,231,255,'+epiA+')',22,700);}
       else{const big=id==='venus';
         planet(ctx,x,y,lerp(big?12:9,big?7:4.8,resolve),big?'rgba(255,248,225,1)':'rgba(255,232,185,1)',big?5:4,epiA);
         label2(ctx,PLANET_TH[id],x+18,y-12,(big?'rgba(255,245,215,':'rgba(255,224,170,')+epiA+')',22,700,'left');}
@@ -121,7 +121,7 @@ function draw(canvas,frame){
 
   ctx.textAlign='center';ctx.textBaseline='alphabetic';
   ctx.shadowColor='rgba(0,0,0,0.6)';ctx.shadowBlur=12;
-  ctx.fillStyle='#fff';ctx.font='800 64px sans-serif';ctx.fillText('จันทร์ยิ้ม',W/2,96);
+  ctx.fillStyle='#fff';ctx.font='800 58px sans-serif';ctx.fillText('พระจันทร์ยิ้ม',W/2,96);
   ctx.shadowBlur=0;
 }
 function label2(ctx,t,x,y,col,size,w,align){
