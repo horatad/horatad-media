@@ -23,21 +23,22 @@ function planet(ctx,x,y,coreR,col){
   ctx.restore();
 }
 // จันทร์เสี้ยวสมจริง: earthshine + ขอบ terminator นุ่ม (blur) · เปิดขึ้น = ยิ้ม
-function realMoon(ctx,x,y,r){
-  // halo บางๆ เฉพาะรอบเสี้ยวสว่างล่าง (ไม่เรืองเป็นจานเต็ม)
-  ctx.save();ctx.filter='blur(16px)';ctx.fillStyle='rgba(225,232,248,0.16)';
-  ctx.beginPath();ctx.arc(x,y+r*0.42,r*0.85,0,7);ctx.fill();ctx.filter='none';ctx.restore();
+function realMoon(ctx,x,y,r,sky){
+  const off=r*0.60;   // วงเงาเลื่อนขึ้น → เหลือเสี้ยวสว่างด้านล่าง = ปากยิ้ม
+  // เรืองนุ่มใต้เสี้ยว (ไม่เป็นจานเต็ม)
+  ctx.save();ctx.globalCompositeOperation='lighter';ctx.filter='blur(12px)';
+  ctx.fillStyle='rgba(220,228,245,0.11)';
+  ctx.beginPath();ctx.arc(x,y+r*0.5,r*0.7,0,7);ctx.fill();
+  ctx.filter='none';ctx.restore();
+  // clip จานจันทร์ → เติมสว่างทั้งจาน → ทับ "สีฟ้าดำพื้นหลัง" ที่ครึ่งบน (วงเงาเลื่อนขึ้น)
+  // → เหลือเสี้ยวสว่างล่าง · ด้านมืดกลืนพื้นสนิท (สีเดียวกับ bg เป๊ะ)
   ctx.save();
   ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.clip();
-  // ด้านสว่าง (cream) เต็มจาน — ไล่จากล่าง(สว่าง)→บน
-  const lit=ctx.createLinearGradient(0,y+r,0,y-r);
-  lit.addColorStop(0,'#fdf8ea');lit.addColorStop(0.55,'#ebe3ce');lit.addColorStop(1,'#cdc6b0');
+  const lit=ctx.createLinearGradient(0,y+r,0,y-r*0.2);
+  lit.addColorStop(0,'#fefaee');lit.addColorStop(0.7,'#ece4cf');lit.addColorStop(1,'#cfc8b2');
   ctx.fillStyle=lit;ctx.fillRect(x-r,y-r,2*r,2*r);
-  // คว้านด้านบนให้โปร่ง (ด้านมืดกลืนฟ้า ไม่เห็น) → เหลือเสี้ยวสว่างล่าง = ยิ้ม · ขอบนุ่ม
-  ctx.globalCompositeOperation='destination-out';
-  ctx.filter='blur(8px)';
-  ctx.beginPath();ctx.arc(x,y-r*0.52,r*1.02,0,7);ctx.fill();
-  ctx.filter='none';ctx.globalCompositeOperation='source-over';
+  ctx.fillStyle=sky;
+  ctx.beginPath();ctx.arc(x,y-off,r,0,7);ctx.fill();
   ctx.restore();
 }
 function label(ctx,t,x,y,col,size,w){
@@ -47,18 +48,12 @@ function label(ctx,t,x,y,col,size,w){
 
 function draw(canvas,frame){
   const ctx=canvas.getContext('2d');
-  // ── ท้องฟ้าพลบค่ำสมจริง (ไล่สี navy→ฟ้า→ส้มขอบฟ้า) ──
+  // ── ท้องฟ้ากลางคืน ดำ/ดำเทา (ไม่ใช่พลบค่ำฟ้า-ส้ม) ──
   const sky=ctx.createLinearGradient(0,0,0,H);
-  sky.addColorStop(0.00,'#070c1c');sky.addColorStop(0.30,'#0e1b3a');
-  sky.addColorStop(0.58,'#22315c');sky.addColorStop(0.74,'#5b5277');
-  sky.addColorStop(0.84,'#b06a3a');sky.addColorStop(0.92,'#d98b48');sky.addColorStop(1,'#3a2418');
+  sky.addColorStop(0.00,'#040406');sky.addColorStop(0.55,'#0a0b11');sky.addColorStop(1,'#15161e');
   ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
-  // หมอกแสงเหนือขอบฟ้า (airglow)
-  const haze=ctx.createRadialGradient(W/2,H*0.9,40,W/2,H*0.9,W*0.9);
-  haze.addColorStop(0,'rgba(240,170,110,0.30)');haze.addColorStop(1,'transparent');
-  ctx.fillStyle=haze;ctx.fillRect(0,0,W,H);
-  // ดาวจางๆ น้อยๆ (พลบค่ำเห็นไม่กี่ดวง)
-  STARS.forEach(s=>{ctx.globalAlpha=.04+Math.abs(Math.sin(s.tw+frame*.02))*.18;
+  // ดาวพื้นหลัง (ฟ้ามืดเห็นได้มากขึ้นนิด)
+  STARS.forEach(s=>{ctx.globalAlpha=.06+Math.abs(Math.sin(s.tw+frame*.02))*.26;
     ctx.fillStyle='#dce6ff';ctx.beginPath();ctx.arc(s.x*W,s.y*H,s.r,0,7);ctx.fill();});
   ctx.globalAlpha=1;
 
@@ -88,7 +83,7 @@ function draw(canvas,frame){
   // === 3 ดวง (สมจริง) ===
   planet(ctx,venus[0],venus[1],4.6*tw,'rgba(255,248,225,1)');   // ศุกร์ สว่างสุด
   planet(ctx,jup[0],jup[1],3.4*tw,'rgba(255,232,185,1)');       // พฤหัส
-  realMoon(ctx,moon[0],moon[1],mR);                             // จันทร์เสี้ยวยิ้ม
+  realMoon(ctx,moon[0],moon[1],mR,sky);                         // จันทร์เสี้ยวยิ้ม (clip+ทับสีพื้น)
 
   // ป้ายชื่อ (เล็ก จาง — A เด่น/B จาง)
   const aLab=interpolate(frame,[20,40,A_END,B_START],[0,1,1,0.3],{extrapolateLeft:'clamp',extrapolateRight:'clamp'});
@@ -110,7 +105,7 @@ function draw(canvas,frame){
     ctx.fillStyle='rgba(255,255,255,.92)';ctx.font='600 30px sans-serif';
     ctx.fillText('แค่บังเอิญอยู่ "ทิศเดียวกัน" จากโลก',W/2,1892);ctx.globalAlpha=1;
   }else{ctx.fillStyle='rgba(255,245,225,.82)';ctx.font='600 27px sans-serif';
-    ctx.fillText('๑๖–๑๗ มิ.ย. ๒๕๖๙ · ทิศตะวันตก หลังตะวันตกดิน',W/2,1886);}
+    ctx.fillText('๑๖–๑๗ มิ.ย. ๒๕๖๙ · มองทางทิศตะวันตก',W/2,1886);}
 }
 
 export function SmileyFace(){
@@ -118,7 +113,7 @@ export function SmileyFace(){
   const ref=useRef(null);
   useLayoutEffect(()=>{if(!ref.current)return;const c=ref.current;c.width=W;c.height=H;draw(c,frame);},[frame]);
   const fade=interpolate(frame,[0,15,DUR-15,DUR],[0,1,1,0],{extrapolateLeft:'clamp',extrapolateRight:'clamp'});
-  return(<AbsoluteFill style={{background:'#070c1c'}}>
+  return(<AbsoluteFill style={{background:'#040406'}}>
     <AbsoluteFill style={{opacity:fade}}>
       <canvas ref={ref} style={{width:W,height:H,position:'absolute'}}/>
     </AbsoluteFill>
