@@ -84,3 +84,18 @@ Thumbs.db
 desktop.ini
 .DS_Store
 ~$*
+
+# ── Secrets / credentials (security audit 2026-06-19 · กันเผลอ commit อนาคต) ──
+.env
+.env.*
+*.local
+*.key
+*.pem
+*.pfx
+*.p12
+*.keystore
+*.jks
+.npmrc
+credentials.json
+service-account*.json
+*creds*.txt
