@@ -42,3 +42,6 @@
 
 ## ไม่ track ใน git (regenerable หรือใหญ่)
 ไฟล์เสียง `*.wav/*.mp3` (auditions เทียบ soundfont = สร้างใหม่จาก .mid ได้) · soundfont `*.sf2/*.sf3` · installer · OMR intermediate (`_rm_*.png`, `_score*.pdf`, `omr_test/`, `omr_full/`) · `fluidsynth/`
+
+## เคลียร์ทดสอบ (21 มิ.ย. 2569)
+พี่ปีเตอร์สั่งเคลียร์ clips/ ทิ้ง output+source ทดสอบทั้งหมด (445M → 7.4M). ลบ: test render `*.wav` (Mozart/untitled/_piano/_bbcso/testmidi), soundfont-audition `*.mp3` (Violin/Valkyries/Symphony/Piano/Duet ×6), OMR intermediate, master copy ที่อยู่ Drive แล้ว (Shostakovich/Hora/มาร์ช), test MIDI/`.rpp` ที่ไม่ใช่ของ master, `Backups/` `Media/`. **เหลือเก็บ:** scripts (`.py/.ps1/.lua`) · README · source ของ master (`Hora Staccato ... (expressive).mid` + `HoraStaccato.rpp` · `RoyalMarch_full.mid`+`_rajawallop.mid`) · `skaters-waltz.mp3`+`_yt-source.webm` (BGM ใช้จริง). Master 3 ตัวอยู่ Drive `_BGM-lab\` (ตัวจริง). ทดสอบรอบใหม่ = รัน scripts สร้างใหม่ได้.
