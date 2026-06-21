@@ -44,4 +44,7 @@
 ไฟล์เสียง `*.wav/*.mp3` (auditions เทียบ soundfont = สร้างใหม่จาก .mid ได้) · soundfont `*.sf2/*.sf3` · installer · OMR intermediate (`_rm_*.png`, `_score*.pdf`, `omr_test/`, `omr_full/`) · `fluidsynth/`
 
 ## เคลียร์ทดสอบ (21 มิ.ย. 2569)
-พี่ปีเตอร์สั่งเคลียร์ clips/ ทิ้ง output+source ทดสอบทั้งหมด (445M → 7.4M). ลบ: test render `*.wav` (Mozart/untitled/_piano/_bbcso/testmidi), soundfont-audition `*.mp3` (Violin/Valkyries/Symphony/Piano/Duet ×6), OMR intermediate, master copy ที่อยู่ Drive แล้ว (Shostakovich/Hora/มาร์ช), test MIDI/`.rpp` ที่ไม่ใช่ของ master, `Backups/` `Media/`. **เหลือเก็บ:** scripts (`.py/.ps1/.lua`) · README · source ของ master (`Hora Staccato ... (expressive).mid` + `HoraStaccato.rpp` · `RoyalMarch_full.mid`+`_rajawallop.mid`) · `skaters-waltz.mp3`+`_yt-source.webm` (BGM ใช้จริง). Master 3 ตัวอยู่ Drive `_BGM-lab\` (ตัวจริง). ทดสอบรอบใหม่ = รัน scripts สร้างใหม่ได้.
+พี่ปีเตอร์สั่งเคลียร์ clips/ ทิ้งของทดสอบ+output+source ทั้งหมด (445M → 161K). **เหลือเฉพาะ scripts (`.py/.ps1/.lua`) + README + `_4front_vst.snippet`** — clips/ = lab tooling ล้วน.
+ลบทั้งหมด: test render `*.wav` (Mozart/untitled/_piano/_bbcso/testmidi), soundfont-audition `*.mp3` (Violin/Valkyries/Symphony/Piano/Duet ×6), OMR intermediate, master copy ที่อยู่ Drive แล้ว, test+master source MIDI/`.rpp` (รวม `HoraStaccato.rpp`, Hora/RoyalMarch `.mid`), `Backups/` `Media/`, `skaters-waltz.mp3`+`_yt-source.webm`.
+- ⚠️ **master = render เสียงบน Drive `_BGM-lab\` เท่านั้น** (Shostakovich/Hora/มาร์ช) — source REAPER/MIDI ลบแล้ว แก้ไข master เดิมไม่ได้ ต้องทำใหม่จาก scripts
+- BGM ที่ใช้จริงในคลิป = copy ใน `epicycle\public\audio\` (ไม่กระทบ) · ทดสอบ soundfont รอบใหม่ = รัน scripts สร้างใหม่
