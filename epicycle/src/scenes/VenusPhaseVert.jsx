@@ -147,6 +147,6 @@ export function VenusPhaseVert(){
       <Credit timing={timingVenus} label="based on" source="GALILEO" sub="phases of Venus · 1610"/>
     </AbsoluteFill>
     <Narration timing={timingVenus} voDir="vo-venus"/>
-    <Music timing={timingVenus} music="audio/dream-island-clip.mp3"/>
+    <Music timing={timingVenus} music="audio/hora-staccato-clip.mp3"/>
   </AbsoluteFill>);
 }

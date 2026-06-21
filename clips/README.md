@@ -37,7 +37,7 @@
 ## Master / ผลงานสำคัญ → backup บน Drive
 `G:\My Drive\horatad-media\_BGM-lab\` :
 - `Shostakovich Waltz2 - seamless loop B (36s gapless).wav` ← BGM ที่ใช้จริงในคลิป (loop ใน epicycle)
-- `Hora Staccato (Dinicu) - violin+piano MASTER.wav`
+- `Hora Staccato (Dinicu) - violin+piano MASTER.wav` ← **master = rework 17 มิ.ย. 2569** (REAPER `clips\HoraStaccato.rpp` → render `clips\HoraStaccato.wav` · มิกซ์ดังขึ้น) · ตัวเก่า 11 มิ.ย. ลบทิ้งแล้ว (กันสับสน) · คลิปใช้ในวิดีโอ = `epicycle\public\audio\hora-staccato-clip.mp3` (ตัด 62วิ −5.5dB)
 - `มาร์ชราชวัลลภ OMR (full band).mp3`
 
 ## ไม่ track ใน git (regenerable หรือใหญ่)
