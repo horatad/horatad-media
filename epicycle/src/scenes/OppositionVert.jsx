@@ -19,6 +19,17 @@ const STARS=Array.from({length:300},(_,i)=>({
   x:(Math.sin(i*127.1)*.5+.5),y:(Math.sin(i*311.7)*.5+.5),
   r:i%9===0?1.3:i%3===0?.7:.35,tw:i*0.41
 }));
+const FADE=22;                       // เฟรมที่พื้นที่แรเงาค่อยจางหายหลังจบพักร
+
+// ตำแหน่ง heliocentric ของโลก/เสาร์ ณ เฟรมใดๆ (ใช้คำนวณพื้นที่กวาด)
+function posAt(fr){
+  const f=fr*SPEED+OFF, dr=Math.PI/180;
+  const lamE=(S0-SS*f+180)*dr, lamS=(S0-SAT.dS*f)*dr;
+  return {ex:CX+RE*Math.cos(lamE),ey:CY+RE*Math.sin(lamE),sx:CX+RS*Math.cos(lamS),sy:CY+RS*Math.sin(lamS)};
+}
+// ช่วงพักร (เดินถอยหลัง) ทั้งหมดในคลิป — คำนวณล่วงหน้า [{s,e}]
+const RETRO=[];
+{let was=false,st=0;for(let fr=0;fr<timingOpp.DURATION;fr++){const r=isRetro(SAT,fr*SPEED+OFF);if(r&&!was)st=fr;if(!r&&was)RETRO.push({s:st,e:fr-1});was=r;}if(was)RETRO.push({s:st,e:timingOpp.DURATION-1});}
 
 function drawSaturn(ctx,x,y,bR,opp){
   if(opp){
@@ -76,12 +87,23 @@ function draw(canvas,frame){
   ctx.beginPath();ctx.arc(CX,CY,RE,0,Math.PI*2);
   ctx.strokeStyle='rgba(120,180,255,.30)';ctx.lineWidth=1;ctx.setLineDash([3,7]);ctx.stroke();ctx.setLineDash([]);
 
-  // ช่วงเสาร์พักร (เดินถอยหลัง): เส้นเล็งสีแดงจาง โยงเสาร์→โลก (เห็นการถอยหลังจากเส้นนี้)
-  if(retro){
+  // ช่วงเสาร์พักร: พื้นที่แรเงาแดงจาง = บริเวณที่เส้นเล็งโลก→เสาร์กวาดผ่าน
+  // โตจากตำแหน่งเริ่มพักร→ปัจจุบัน · จบพักรแล้วค่อยจางหาย (FADE)
+  let shade=null, sa=0;
+  for(const w of RETRO){
+    if(frame>=w.s&&frame<=w.e){shade=[w.s,frame];sa=1;break;}
+    if(frame>w.e&&frame<=w.e+FADE){shade=[w.s,w.e];sa=1-(frame-w.e)/FADE;break;}
+  }
+  if(shade&&shade[1]>shade[0]){
+    const N=20,pts=[];
+    for(let i=0;i<=N;i++){const p=posAt(shade[0]+(shade[1]-shade[0])*i/N);pts.push([p.sx,p.sy]);}
+    for(let i=N;i>=0;i--){const p=posAt(shade[0]+(shade[1]-shade[0])*i/N);pts.push([p.ex,p.ey]);}
     ctx.save();
-    ctx.shadowColor='rgba(255,60,60,.45)';ctx.shadowBlur=8;
-    ctx.strokeStyle='rgba(255,80,80,.32)';ctx.lineWidth=2;
-    ctx.beginPath();ctx.moveTo(stx,sty);ctx.lineTo(ex,ey);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);
+    for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);
+    ctx.closePath();
+    ctx.fillStyle='rgba(255,70,70,'+(0.13*sa).toFixed(3)+')';ctx.fill();
+    ctx.strokeStyle='rgba(255,90,90,'+(0.22*sa).toFixed(3)+')';ctx.lineWidth=1.5;ctx.stroke();
     ctx.restore();
   }
 
