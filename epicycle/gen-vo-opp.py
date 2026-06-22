@@ -1,4 +1,4 @@
-# gen-vo-opp.py — voiceover ไทยสำหรับ OppositionVert (ดาวเคราะห์ใกล้โลก/opposition) · edge-tts
+# gen-vo-opp.py — voiceover ไทยสำหรับ OppositionVert (ดาวเสาร์ใกล้โลก/opposition) · edge-tts
 import asyncio, edge_tts, os
 VOICE="th-TH-NiwatNeural"; RATE="+6%"; OUT="public/vo-opp"; os.makedirs(OUT,exist_ok=True)
 SEGMENTS=[

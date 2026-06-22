@@ -1,4 +1,4 @@
-// timing-opp.js — OppositionVert (ดาวเคราะห์ใกล้โลก/opposition · เสาร์)
+// timing-opp.js — OppositionVert (ดาวเสาร์ใกล้โลก/opposition)
 const DUR=[119,94,120,91,99,121,93,100,89,97,133];
 const GAP=6, INTRO=150;
 const TEXT=[

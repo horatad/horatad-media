@@ -10,7 +10,7 @@ const HL=(t,color)=>({text:t,bold:true,color});
 const doc=new Document({sections:[{
   properties:{page:{margin:{top:1000,bottom:1000,left:1100,right:1100}}},
   children:[
-    new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:60},children:[new TextRun({text:'🔭 ดาวเคราะห์ "ใกล้โลก" — Opposition',bold:true,size:40,color:'7B4FB0',font:FONT})]}),
+    new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:60},children:[new TextRun({text:'🔭 ดาวเสาร์ใกล้โลก — Opposition',bold:true,size:40,color:'7B4FB0',font:FONT})]}),
     new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:200},children:[new TextRun({text:'🌌 ตรงข้ามดวงอาทิตย์ · 🔆 สว่างสุด · 🌙 ขึ้นทั้งคืน · ℞ ถอยหลังพอดี',size:28,color:'555555',font:FONT})]}),
 
     P([{text:'ปี ๒๕๖๙ '},HL('ดาวเสาร์ใกล้โลกที่สุด ๔ ต.ค.','7B4FB0'),{text:' และ '},HL('ดวงจันทร์บังดาวพฤหัสบดี ๓ พ.ย.','7B4FB0'),{text:' · คำว่า "ใกล้โลก" ของดาวเคราะห์นอกมีชื่อทางการว่า '},B('"opposition" (ตรงข้ามดวงอาทิตย์)'),{text:' — บทนี้อธิบายว่าทำไมมันคือจังหวะที่ดูดาวดวงนั้นดีที่สุดของปี'}]),
