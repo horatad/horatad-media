@@ -76,7 +76,14 @@ function draw(canvas,frame){
   ctx.beginPath();ctx.arc(CX,CY,RE,0,Math.PI*2);
   ctx.strokeStyle='rgba(120,180,255,.30)';ctx.lineWidth=1;ctx.setLineDash([3,7]);ctx.stroke();ctx.setLineDash([]);
 
-  // (เอาเส้นเชื่อมระหว่างดาวออกตามคำสั่งพี่ — near/far ดูจากตำแหน่ง+ขนาด+halo+badge แทน)
+  // ช่วงเสาร์พักร (เดินถอยหลัง): เส้นเล็งสีแดงจาง โยงเสาร์→โลก (เห็นการถอยหลังจากเส้นนี้)
+  if(retro){
+    ctx.save();
+    ctx.shadowColor='rgba(255,60,60,.45)';ctx.shadowBlur=8;
+    ctx.strokeStyle='rgba(255,80,80,.32)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(stx,sty);ctx.lineTo(ex,ey);ctx.stroke();
+    ctx.restore();
+  }
 
   // ดวงอาทิตย์ (ใหญ่สุด — ศูนย์กลาง)
   ctx.shadowColor='#FF7733';ctx.shadowBlur=34;
