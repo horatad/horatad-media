@@ -76,30 +76,7 @@ function draw(canvas,frame){
   ctx.beginPath();ctx.arc(CX,CY,RE,0,Math.PI*2);
   ctx.strokeStyle='rgba(120,180,255,.30)';ctx.lineWidth=1;ctx.setLineDash([3,7]);ctx.stroke();ctx.setLineDash([]);
 
-  // รัศมีจางจากอาทิตย์ (ให้เห็นการเรียงตรงตอน opposition)
-  ctx.beginPath();ctx.moveTo(CX,CY);ctx.lineTo(stx,sty);
-  ctx.strokeStyle='rgba(204,136,255,.20)';ctx.lineWidth=.8;ctx.stroke();
-
-  // ★ เส้นโลก–เสาร์ (หัวใจ: ยาว=ไกล สั้น=ใกล้) ★
-  if(opp){
-    ctx.shadowColor='rgba(255,220,140,.9)';ctx.shadowBlur=14;
-    ctx.strokeStyle='rgba(255,222,150,.95)';ctx.lineWidth=3.2;
-  }else{
-    ctx.strokeStyle='rgba(160,170,210,.45)';ctx.lineWidth=1.3;ctx.setLineDash([5,6]);
-  }
-  ctx.beginPath();ctx.moveTo(ex,ey);ctx.lineTo(stx,sty);ctx.stroke();
-  ctx.setLineDash([]);ctx.shadowBlur=0;
-
-  // ป้ายระยะบนเส้นโลก–เสาร์
-  const mx=ex+(stx-ex)*0.55, my=ey+(sty-ey)*0.55;
-  ctx.textAlign='center';ctx.textBaseline='middle';
-  if(opp){
-    ctx.fillStyle='#ffe49a';ctx.font='700 26px sans-serif';
-    ctx.fillText('ใกล้สุด ๑,๒๖๑ ลกม.',mx+96,my);
-  }else{
-    ctx.fillStyle='rgba(180,190,220,.7)';ctx.font='500 22px sans-serif';
-    ctx.fillText('ไกลออกไป',mx+70,my);
-  }
+  // (เอาเส้นเชื่อมระหว่างดาวออกตามคำสั่งพี่ — near/far ดูจากตำแหน่ง+ขนาด+halo+badge แทน)
 
   // ดวงอาทิตย์ (ใหญ่สุด — ศูนย์กลาง)
   ctx.shadowColor='#FF7733';ctx.shadowBlur=34;
