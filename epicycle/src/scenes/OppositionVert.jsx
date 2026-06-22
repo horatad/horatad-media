@@ -12,8 +12,8 @@ import * as timingOpp from '../timing-opp.js';
 // opposition = โลกแซงมาอยู่ฝั่งเดียวกับเสาร์ → ใกล้+สว่างสุด + พักร
 // SPEED 3 (โลกโคจรช้าลง 50% ตามคำสั่งพี่) → ปรากฏการณ์วน ~4 รอบในคลิป
 const W=1080,H=1920,SPEED=3,OFF=920;
-const CX=540,CY=760;
-const RE=82, RS=350;                 // รัศมีวงโคจร (px): โลก(เน้นให้เห็น) · เสาร์
+const CX=540,CY=1080;                // ดวงอาทิตย์ต่ำลง → ดาราจักรเต็มจอ (text อยู่บนหมด)
+const RE=250, RS=540;                // รัศมีวงโคจรใหญ่ (เต็มจอ): โลก(วงใหญ่เต็มล่าง) · เสาร์(เต็มกว้าง)
 const SAT=PLANETS.find(p=>p.id==='saturn');
 const STARS=Array.from({length:300},(_,i)=>({
   x:(Math.sin(i*127.1)*.5+.5),y:(Math.sin(i*311.7)*.5+.5),
@@ -86,61 +86,53 @@ function draw(canvas,frame){
   }
 
   // ดวงอาทิตย์ (ใหญ่สุด — ศูนย์กลาง)
-  ctx.shadowColor='#FF7733';ctx.shadowBlur=34;
-  const sg=ctx.createRadialGradient(CX,CY,0,CX,CY,24);
+  ctx.shadowColor='#FF7733';ctx.shadowBlur=44;
+  const sg=ctx.createRadialGradient(CX,CY,0,CX,CY,34);
   sg.addColorStop(0,'#FFE7A0');sg.addColorStop(1,'#FF5522');
-  ctx.beginPath();ctx.arc(CX,CY,23,0,Math.PI*2);ctx.fillStyle=sg;ctx.fill();ctx.shadowBlur=0;
-  ctx.fillStyle='rgba(255,210,150,.9)';ctx.font='600 16px sans-serif';
-  ctx.textAlign='center';ctx.textBaseline='top';ctx.fillText('ดวงอาทิตย์',CX,CY+26);
+  ctx.beginPath();ctx.arc(CX,CY,33,0,Math.PI*2);ctx.fillStyle=sg;ctx.fill();ctx.shadowBlur=0;
+  ctx.fillStyle='rgba(255,210,150,.92)';ctx.font='600 22px sans-serif';
+  ctx.textAlign='center';ctx.textBaseline='top';ctx.fillText('ดวงอาทิตย์',CX,CY+38);
 
   // โลก (วงใน เคลื่อนเร็ว)
-  const eR=11;
-  ctx.shadowColor='#aaddff';ctx.shadowBlur=16;
+  const eR=18;
+  ctx.shadowColor='#aaddff';ctx.shadowBlur=20;
   const eg=ctx.createRadialGradient(ex,ey,0,ex,ey,eR);
   eg.addColorStop(0,'#fff');eg.addColorStop(1,'#6fb0ff');
   ctx.beginPath();ctx.arc(ex,ey,eR,0,Math.PI*2);ctx.fillStyle=eg;ctx.fill();ctx.shadowBlur=0;
-  ctx.fillStyle='rgba(180,210,255,.95)';ctx.font='600 16px sans-serif';
-  ctx.textBaseline='top';ctx.fillText('โลก',ex,ey+eR+2);
+  ctx.fillStyle='rgba(190,215,255,.97)';ctx.font='600 22px sans-serif';
+  ctx.textBaseline='top';ctx.fillText('โลก',ex,ey+eR+4);
 
   // ดาวเสาร์ (ดวงจริงมีวงแหวน · ใกล้=ใหญ่)
-  const bR=10+8*near;                 // 10–18: เล็กกว่าอาทิตย์(23) · opp→โตกว่าโลก(11)
+  const bR=17+13*near;                // 17–30: เล็กกว่าอาทิตย์(33) · opp→โตกว่าโลก(18) ชัดเจน
   const ry=drawSaturn(ctx,stx,sty,bR,opp);
   ctx.textAlign='center';ctx.textBaseline='top';
-  ctx.fillStyle='rgba(232,212,150,.96)';ctx.font='600 18px sans-serif';
-  ctx.fillText('เสาร์',stx,sty+ry+10);
+  ctx.fillStyle='rgba(235,216,154,.97)';ctx.font='600 23px sans-serif';
+  ctx.fillText('เสาร์',stx,sty+ry+12);
   if(retro){
     ctx.textAlign='left';ctx.textBaseline='bottom';
-    ctx.fillStyle='#ff7a7a';ctx.font='600 18px sans-serif';
-    ctx.fillText('℞ พักร',stx+bR*2.2,sty-bR*0.6);
+    ctx.fillStyle='#ff8585';ctx.font='700 23px sans-serif';
+    ctx.fillText('℞ พักร',stx+bR*2.2,sty-bR*0.5);
   }
 
-  // ── หัวเรื่อง ──
+  // ── ข้อความทั้งหมดอยู่ด้านบน · เก็บเฉพาะสำคัญ · ตัวใหญ่อ่านง่ายบนมือถือ ──
   ctx.textAlign='center';ctx.textBaseline='alphabetic';
-  ctx.fillStyle='#cf9bff';ctx.font='700 54px sans-serif';
-  ctx.fillText('ดาวเสาร์ใกล้โลก',CX,150);
-  ctx.fillStyle='rgba(207,155,255,.8)';ctx.font='600 27px Georgia,serif';
-  ctx.fillText('Opposition · มุมมองเฮลิโอเซนทริก',CX,192);
+  ctx.fillStyle='#cf9bff';ctx.font='700 60px sans-serif';
+  ctx.fillText('ดาวเสาร์ใกล้โลก',CX,120);
+  ctx.fillStyle='rgba(207,155,255,.72)';ctx.font='600 27px Georgia,serif';
+  ctx.fillText('Opposition · มุมมองเฮลิโอเซนทริก',CX,164);
 
-  // badge สถานะ
-  ctx.font='700 34px sans-serif';
+  // badge สถานะ (ใจความหลัก · ตัวใหญ่)
+  ctx.font='700 42px sans-serif';
   if(opp){
     ctx.fillStyle='#ffd98a';
-    ctx.fillText('🪐 โลกแซงมาอยู่กลาง → เสาร์ใกล้+สว่างสุด',CX,250);
+    ctx.fillText('🪐 โลกแซงมาอยู่กลาง = เสาร์ใกล้สุด',CX,244);
   }else{
-    ctx.fillStyle='rgba(160,150,200,.9)';
-    ctx.fillText('โลกยังไม่ถึงตำแหน่งตรงข้าม — เสาร์ไกล',CX,250);
+    ctx.fillStyle='rgba(170,160,210,.92)';
+    ctx.fillText('โลกยังไม่ถึงจุดตรงข้าม — เสาร์ไกล',CX,244);
   }
-  ctx.fillStyle='rgba(207,155,255,.55)';ctx.font='400 23px sans-serif';
-  ctx.fillText('มุมเสาร์–ดวงอาทิตย์ (จากโลก) '+elong.toFixed(0)+'°   (180° = ตรงข้าม = ใกล้สุด)',CX,288);
-
-  // ── แผงระยะทาง + ขนาดเปรียบเทียบ (เหตุการณ์ ๔ ต.ค. ๒๕๖๙) ──
-  const py=1245;
-  ctx.fillStyle='rgba(207,155,255,.82)';ctx.font='600 30px sans-serif';
-  ctx.fillText('ดวงอาทิตย์ — เสาร์   ~๑,๔๑๐ ล้านกม.  (๙.๔ AU)',CX,py);
-  ctx.fillStyle='#e8d496';ctx.font='700 33px sans-serif';
-  ctx.fillText('โลก — เสาร์ (ใกล้สุด ๔ ต.ค.)   ๑,๒๖๑ ล้านกม.  (๘.๔ AU)',CX,py+46);
-  ctx.fillStyle='rgba(200,210,255,.7)';ctx.font='400 27px sans-serif';
-  ctx.fillText('ขนาดจริง:  เสาร์ ≈ ๙ เท่าโลก   ·   ดวงอาทิตย์ ≈ ๑๒ เท่าเสาร์',CX,py+90);
+  // ใจความ ระยะ+ขนาด — บรรทัดเดียว สำคัญ
+  ctx.fillStyle='#e8d496';ctx.font='700 32px sans-serif';
+  ctx.fillText('ใกล้สุด ๔ ต.ค. · ๑,๒๖๑ ล้านกม. · เสาร์ใหญ่ ๙ เท่าโลก',CX,300);
 }
 
 export function OppositionVert(){
