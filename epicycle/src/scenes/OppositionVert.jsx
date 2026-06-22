@@ -123,12 +123,31 @@ export function OppositionVert(){
   const ref=useRef(null);
   useLayoutEffect(()=>{if(!ref.current)return;const c=ref.current;c.width=W;c.height=H;draw(c,frame);},[frame]);
   const loopFade=interpolate(frame,[0,15,timingOpp.DURATION-15,timingOpp.DURATION],[0,1,1,0],{extrapolateLeft:'clamp',extrapolateRight:'clamp'});
+  // การ์ดเหตุการณ์ + เวลาสังเกตการณ์ (โผล่ช่วง intro ~5วิ ก่อนพากย์ · NARIT)
+  const cardOp=interpolate(frame,[0,18,135,165],[0,1,1,0],{extrapolateLeft:'clamp',extrapolateRight:'clamp'});
   return(<AbsoluteFill style={{background:'#010814'}}>
     <AbsoluteFill style={{opacity:loopFade}}>
       <canvas ref={ref} style={{width:W,height:H,position:'absolute'}}/>
       <Caption timing={timingOpp}/>
       <Credit timing={timingOpp} label="based on" source="ALMAGEST" sub="epicycle · Ptolemy ~150 CE"/>
     </AbsoluteFill>
+    {cardOp>0.001&&(
+      <AbsoluteFill style={{opacity:cardOp,justifyContent:'center',alignItems:'center',pointerEvents:'none'}}>
+        <div style={{
+          background:'rgba(4,8,20,0.88)',border:'1px solid rgba(204,136,255,0.4)',
+          borderRadius:28,padding:'46px 54px',textAlign:'center',maxWidth:940,
+          boxShadow:'0 0 70px rgba(160,110,255,0.32)'}}>
+          <div style={{color:'#cf9bff',fontSize:36,fontWeight:600,letterSpacing:1}}>🪐 ปรากฏการณ์ท้องฟ้า ปี ๒๕๖๙</div>
+          <div style={{color:'#ffffff',fontSize:74,fontWeight:800,margin:'16px 0 6px'}}>ดาวเสาร์ใกล้โลกที่สุด</div>
+          <div style={{color:'#d6a6ff',fontSize:52,fontWeight:700}}>๔ ตุลาคม ๒๕๖๙</div>
+          <div style={{color:'rgba(214,166,255,0.92)',fontSize:33,marginTop:26,lineHeight:1.5}}>
+            👁 ดูได้ <b>ตลอดคืน</b> — ตั้งแต่ดวงอาทิตย์ตก ถึงรุ่งเช้า<br/>
+            ขึ้นทางทิศ <b>ตะวันออก</b> · ตาเปล่าเห็นทั่วไทย
+          </div>
+          <div style={{color:'rgba(255,255,255,0.55)',fontSize:26,marginTop:22,fontStyle:'italic'}}>วงแหวนต้องใช้กล้องโทรทรรศน์ · ทำไม "ใกล้+สว่างสุด"? ↓</div>
+        </div>
+      </AbsoluteFill>
+    )}
     <Narration timing={timingOpp} voDir="vo-opp"/>
     <Music timing={timingOpp} music="audio/shostakovich-waltz2-loop.wav"/>
   </AbsoluteFill>);
