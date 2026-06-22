@@ -11,11 +11,11 @@ const doc=new Document({sections:[{
   properties:{page:{margin:{top:1000,bottom:1000,left:1100,right:1100}}},
   children:[
     new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:60},children:[new TextRun({text:'🌙 "พระจันทร์ยิ้ม" — ตา ๒ ข้าง + รอยยิ้ม บนท้องฟ้าจริง',bold:true,size:40,color:'C8901E',font:FONT})]}),
-    new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:200},children:[new TextRun({text:'🪐 ดาวศุกร์ + ดาวพฤหัส = ดวงตา · 🌙 จันทร์เสี้ยว = รอยยิ้ม · 🗓️ มิถุนายน ๒๕๖๙ ทิศตะวันตก',size:27,color:'555555',font:FONT})]}),
+    new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:200},children:[new TextRun({text:'🔭 ดาวศุกร์ + ดาวพฤหัส = ดวงตา · 🌙 จันทร์เสี้ยว = รอยยิ้ม · 🗓️ มิถุนายน ๒๕๖๙ ทิศตะวันตก',size:27,color:'555555',font:FONT})]}),
 
     P([{text:'บางค่ำคืนหลังตะวันตกดิน เงยหน้ามองฟ้าทิศตะวันตก จะเห็นดาวสว่าง ๒ ดวง กับจันทร์เสี้ยวด้านล่าง เรียงตัวกันจน '},HL('ดูเหมือนใบหน้ากำลังยิ้มให้เรา','C8901E'),{text:' — คนเรียกว่า '},B('"พระจันทร์ยิ้ม"'),{text:' · แต่จริงๆ มัน '},B('ไม่ได้อยู่ใกล้กันเลย'),{text:' — มาดูกันว่าเกิดอะไรขึ้น'}]),
 
-    H('🪐 1 — ดวงตา = ดาวศุกร์ + ดาวพฤหัสบดี'),
+    H('🔭 1 — ดวงตา = ดาวศุกร์ + ดาวพฤหัสบดี'),
     P([{text:'ดาวสว่าง ๒ ดวงที่เป็น "ตา" คือ '},HL('ดาวศุกร์','C8901E'),{text:' (สว่างที่สุดบนฟ้า ราว −๔ แมกนิจูด) กับ '},HL('ดาวพฤหัสบดี','C8901E'),{text:' (สว่างรองลงมา) — สองดาวเคราะห์ที่สุกใสที่สุด จึงเด่นชัดแม้ฟ้ายังไม่มืดสนิท'}]),
 
     H('🌙 2 — รอยยิ้ม = จันทร์เสี้ยว'),
