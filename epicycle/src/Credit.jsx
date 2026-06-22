@@ -11,10 +11,11 @@ export function Credit({
   label = 'based on',
   source = 'ALMAGEST',
   sub = 'Claudius Ptolemy · ~150 CE',
+  startAt = null,               // กำหนดเฟรมที่ credit ขึ้นเอง (ละ = VO_END+150 เดิม · backward-compat)
 } = {}) {
   const {VO_END, DURATION} = timing;
   const f = useCurrentFrame();
-  const start = VO_END + 150;   // ขึ้นหลังเสียงพากย์จบ 5 วินาที (150f @30fps)
+  const start = startAt != null ? startAt : VO_END + 150;   // ขึ้นหลังเสียงพากย์จบ 5 วินาที (150f @30fps)
   if (f < start) return null;
   const op = interpolate(f, [start, start + 20, DURATION - 20, DURATION], [0, 1, 1, 0],
     {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});

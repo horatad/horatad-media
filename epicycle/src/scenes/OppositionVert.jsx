@@ -20,6 +20,7 @@ const STARS=Array.from({length:300},(_,i)=>({
   r:i%9===0?1.3:i%3===0?.7:.35,tw:i*0.41
 }));
 const FADE=22;                       // เฟรมที่พื้นที่แรเงาค่อยจางหายหลังจบพักร
+const FREEZE=1605;                    // ช่วงท้าย: freeze ตำแหน่งตอนเสาร์ใกล้โลกสุด (53.5วิ) ค้างไว้รอ credit
 
 // ตำแหน่ง heliocentric ของโลก/เสาร์ ณ เฟรมใดๆ (ใช้คำนวณพื้นที่กวาด)
 function posAt(fr){
@@ -53,7 +54,8 @@ function drawSaturn(ctx,x,y,bR,opp){
 
 function draw(canvas,frame){
   const ctx=canvas.getContext('2d');
-  const f=frame*SPEED+OFF;
+  const pf=Math.min(frame,FREEZE);     // ช่วงท้าย freeze ตำแหน่งตอนเสาร์ใกล้สุด
+  const f=pf*SPEED+OFF;
 
   ctx.fillStyle='#010814';ctx.fillRect(0,0,W,H);
   const vg=ctx.createRadialGradient(CX,CY,W*.18,CX,CY,H*.55);
@@ -91,8 +93,8 @@ function draw(canvas,frame){
   // โตจากตำแหน่งเริ่มพักร→ปัจจุบัน · จบพักรแล้วค่อยจางหาย (FADE)
   let shade=null, sa=0;
   for(const w of RETRO){
-    if(frame>=w.s&&frame<=w.e){shade=[w.s,frame];sa=1;break;}
-    if(frame>w.e&&frame<=w.e+FADE){shade=[w.s,w.e];sa=1-(frame-w.e)/FADE;break;}
+    if(pf>=w.s&&pf<=w.e){shade=[w.s,pf];sa=1;break;}
+    if(pf>w.e&&pf<=w.e+FADE){shade=[w.s,w.e];sa=1-(pf-w.e)/FADE;break;}
   }
   if(shade&&shade[1]>shade[0]){
     const N=20,pts=[];
@@ -168,7 +170,7 @@ export function OppositionVert(){
     <AbsoluteFill style={{opacity:loopFade}}>
       <canvas ref={ref} style={{width:W,height:H,position:'absolute'}}/>
       <Caption timing={timingOpp}/>
-      <Credit timing={timingOpp} label="based on" source="COPERNICUS" sub="heliocentric · 1543"/>
+      <Credit timing={timingOpp} label="based on" source="COPERNICUS" sub="heliocentric · 1543" startAt={1650}/>
     </AbsoluteFill>
     {cardOp>0.001&&(
       <AbsoluteFill style={{opacity:cardOp,justifyContent:'center',alignItems:'center',pointerEvents:'none'}}>
@@ -188,6 +190,6 @@ export function OppositionVert(){
       </AbsoluteFill>
     )}
     <Narration timing={timingOpp} voDir="vo-opp"/>
-    <Music timing={timingOpp} music="audio/estudio-brillante-clip.mp3"/>
+    <Music timing={timingOpp} music="audio/estudio-brillante-clip.mp3" outroFade={120}/>
   </AbsoluteFill>);
 }
