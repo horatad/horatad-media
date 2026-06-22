@@ -9,7 +9,7 @@ import * as timingOpp from '../timing-opp.js';
 
 // ── Opposition แนวตั้ง (Shorts 1080×1920) — re-layout จาก Opposition จัตุรัส · focus ดาวเสาร์ ──
 // SPEED 3.5 + OFFSET 920 → opposition โผล่ตรงช่วงพากย์ (seg1/4/6) · diagram กลางบน
-const W=1080,H=1920,SPEED=3.5,OFF=920;
+const W=1080,H=1920,SPEED=6,OFF=920;
 const CX=540,CY=820,sc=1.25;
 const SUN=PLANETS.find(p=>p.id==='sun');
 const SAT=PLANETS.find(p=>p.id==='saturn');
@@ -69,31 +69,44 @@ function draw(canvas,frame){
   ctx.fillStyle='rgba(180,210,255,.8)';ctx.font='600 15px sans-serif';
   ctx.textAlign='center';ctx.textBaseline='top';ctx.fillText('โลก',CX,CY+eR+3);
 
-  // ดวงอาทิตย์
+  // ดวงอาทิตย์ (ใหญ่สุดในภาพ — สมดุลขนาด: อาทิตย์ > เสาร์ > โลก)
   ctx.shadowColor='#FF7733';ctx.shadowBlur=30;
-  const sg=ctx.createRadialGradient(sx,sy,0,sx,sy,20);
+  const sg=ctx.createRadialGradient(sx,sy,0,sx,sy,22);
   sg.addColorStop(0,'#FFE7A0');sg.addColorStop(1,'#FF5522');
-  ctx.beginPath();ctx.arc(sx,sy,19,0,Math.PI*2);ctx.fillStyle=sg;ctx.fill();ctx.shadowBlur=0;
+  ctx.beginPath();ctx.arc(sx,sy,21,0,Math.PI*2);ctx.fillStyle=sg;ctx.fill();ctx.shadowBlur=0;
   ctx.fillStyle='rgba(255,210,150,.85)';ctx.font='600 14px sans-serif';
-  ctx.textBaseline='top';ctx.fillText('อาทิตย์',sx,sy+22);
+  ctx.textAlign='center';ctx.textBaseline='top';ctx.fillText('อาทิตย์',sx,sy+24);
 
-  // ดาวเสาร์
-  const near=(SAT.defR-dist)/(2*SAT.epiR);
-  const stR=15+11*Math.max(0,Math.min(1,near));
+  // ดาวเสาร์ — วาดเป็นดาวจริงมีวงแหวน (มุมมองจากโลก) · ดวงพอง=ใกล้
+  const near=(SAT.defR+SAT.epiR-dist)/(2*SAT.epiR);   // 0=ไกลสุด(conjunction) · 1=ใกล้สุด(opposition)
+  const bR=10+8*Math.max(0,Math.min(1,near));   // รัศมีดวง 10–18: เล็กกว่าอาทิตย์(21) · opp→โตกว่าโลก(13)
   if(opp){
-    const halo=ctx.createRadialGradient(stx,sty,0,stx,sty,stR*3);
-    halo.addColorStop(0,'rgba(220,180,255,.55)');halo.addColorStop(1,'transparent');
-    ctx.fillStyle=halo;ctx.beginPath();ctx.arc(stx,sty,stR*3,0,Math.PI*2);ctx.fill();
+    const halo=ctx.createRadialGradient(stx,sty,0,stx,sty,bR*3.2);
+    halo.addColorStop(0,'rgba(255,228,170,.5)');halo.addColorStop(1,'transparent');
+    ctx.fillStyle=halo;ctx.beginPath();ctx.arc(stx,sty,bR*3.2,0,Math.PI*2);ctx.fill();
   }
-  ctx.shadowColor=SAT.glow;ctx.shadowBlur=16;
-  ctx.fillStyle=SAT.col;ctx.font='bold '+stR+'px sans-serif';
-  ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(SAT.n,stx,sty);
-  ctx.shadowBlur=0;
-  ctx.fillStyle='rgba(204,136,255,.95)';ctx.font='600 17px sans-serif';
-  ctx.textBaseline='top';ctx.fillText('เสาร์',stx,sty+stR);
+  const rx=bR*2.15, ry=bR*0.6;
+  ctx.save();ctx.translate(stx,sty);ctx.rotate(-0.32);
+  // วงแหวน (วงเต็มด้านหลัง)
+  ctx.strokeStyle='rgba(214,196,140,.8)';ctx.lineWidth=Math.max(2.4,bR*0.34);
+  ctx.beginPath();ctx.ellipse(0,0,rx,ry,0,0,Math.PI*2);ctx.stroke();
+  // ดวงเสาร์ (โทนทองซีดแบบเห็นจากโลก)
+  ctx.shadowColor='rgba(255,210,120,.85)';ctx.shadowBlur=18;
+  const bg=ctx.createRadialGradient(-bR*0.3,-bR*0.3,bR*0.2,0,0,bR);
+  bg.addColorStop(0,'#F7E9BE');bg.addColorStop(.6,'#E3C77C');bg.addColorStop(1,'#B8945A');
+  ctx.fillStyle=bg;ctx.beginPath();ctx.arc(0,0,bR,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+  // วงแหวนครึ่งหน้า (ทับดวง ให้ดูเป็นวงแหวนรอบดาว)
+  ctx.strokeStyle='rgba(238,224,172,.95)';ctx.lineWidth=Math.max(2.4,bR*0.34);
+  ctx.beginPath();ctx.ellipse(0,0,rx,ry,0,0,Math.PI);ctx.stroke();
+  ctx.restore();
+  // ป้าย "เสาร์" + พักร
+  ctx.textAlign='center';ctx.textBaseline='top';
+  ctx.fillStyle='rgba(232,212,150,.96)';ctx.font='600 18px sans-serif';
+  ctx.fillText('เสาร์',stx,sty+ry+10);
   if(retro){
-    ctx.fillStyle='#ff6666';ctx.font='16px serif';ctx.textBaseline='bottom';
-    ctx.fillText('℞',stx+stR+2,sty);
+    ctx.textAlign='left';ctx.textBaseline='bottom';
+    ctx.fillStyle='#ff7a7a';ctx.font='600 18px sans-serif';
+    ctx.fillText('℞ พักร',stx+rx*0.75,sty-bR*0.6);
   }
 
   // หัวเรื่อง (กึ่งกลางบน)
@@ -116,6 +129,16 @@ function draw(canvas,frame){
   // มุมเสาร์–อาทิตย์ (เล็ก ใต้ badge)
   ctx.fillStyle='rgba(207,155,255,.55)';ctx.font='400 24px sans-serif';
   ctx.fillText('มุมเสาร์–ดวงอาทิตย์ '+elong.toFixed(0)+'°  (180° = ตรงข้าม)',CX,338);
+
+  // ── แผงระยะทาง + ขนาดเปรียบเทียบ (อิงเหตุการณ์ ๔ ต.ค. ๒๕๖๙ · ใต้ไดอะแกรม เหนือ caption) ──
+  const py=1200;
+  ctx.textAlign='center';ctx.textBaseline='alphabetic';
+  ctx.fillStyle='rgba(207,155,255,.82)';ctx.font='600 30px sans-serif';
+  ctx.fillText('ดวงอาทิตย์ — เสาร์   ~๑,๔๑๐ ล้านกม.  (๙.๔ AU)',CX,py);
+  ctx.fillStyle='#e8d496';ctx.font='700 33px sans-serif';
+  ctx.fillText('โลก — เสาร์ (ใกล้สุด ๔ ต.ค.)   ๑,๒๖๑ ล้านกม.  (๘.๔ AU)',CX,py+46);
+  ctx.fillStyle='rgba(200,210,255,.7)';ctx.font='400 27px sans-serif';
+  ctx.fillText('ขนาดจริง:  เสาร์ ≈ ๙ เท่าโลก   ·   ดวงอาทิตย์ ≈ ๑๒ เท่าเสาร์',CX,py+90);
 }
 
 export function OppositionVert(){
