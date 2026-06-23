@@ -43,12 +43,19 @@ function drawPhase(ctx,x,y,r,illum,ang,litA,litB,darkFill){
   ctx.restore();
 }
 
-function drawVenus(ctx,vx,vy,labelOp){
+function drawVenus(ctx,vx,vy,mx,my,labelOp){
   const RV=12;
+  // clip: ทั้งจอ "ลบ" วงจานดวงจันทร์ → ขอบจันทร์บังจานศุกร์ทีละนิด (ค่อยๆ หาย/โผล่ ตามจริง · ไม่วับทันที)
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0,0,W,H);
+  ctx.arc(mx,my,RM,0,Math.PI*2);
+  ctx.clip('evenodd');
   const halo=ctx.createRadialGradient(vx,vy,RV*0.5,vx,vy,RV*2.8);
   halo.addColorStop(0,'rgba(215,238,255,0.6)');halo.addColorStop(0.5,'rgba(150,195,255,0.18)');halo.addColorStop(1,'transparent');
   ctx.fillStyle=halo;ctx.beginPath();ctx.arc(vx,vy,RV*2.8,0,Math.PI*2);ctx.fill();
   drawPhase(ctx,vx,vy,RV,0.29,BRIGHT,'#bfe0ff','#ffffff','rgba(15,22,38,0.92)');
+  ctx.restore();
   if(labelOp>0.01){
     ctx.globalAlpha=labelOp;
     ctx.fillStyle='rgba(210,232,255,.95)';ctx.font='600 25px sans-serif';
@@ -81,10 +88,10 @@ function draw(canvas,frame){
   const relD=RELD0-(RELD0+RELD1)*p;                  // จันทร์เทียบศุกร์ (+ก่อน → -หลัง)
   const mx=vx+relD*MOVE[0], my=vy+relD*MOVE[1];
   const dist=Math.hypot(vx-mx,vy-my);
-  const occulted=dist<RM*0.98;
+  const occulted=dist<RM*0.92;                           // (ใช้กับ status เท่านั้น · การบังจริงทำด้วย clip)
   const labelOp=Math.max(0,Math.min(1,(dist-230)/220));  // ป้ายจางหายตอนเข้าใกล้
 
-  if(!occulted) drawVenus(ctx,vx,vy,labelOp);
+  drawVenus(ctx,vx,vy,mx,my,labelOp);                    // ศุกร์ถูกขอบจันทร์ clip บังทีละนิด (ไม่วับทันที)
 
   // ── ดวงจันทร์เสี้ยว (เล็ก สมจริง) ──
   const earth=ctx.createRadialGradient(mx,my,RM*0.2,mx,my,RM);
