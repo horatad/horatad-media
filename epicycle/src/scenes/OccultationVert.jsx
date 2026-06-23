@@ -38,16 +38,18 @@ function drawPhase(ctx,x,y,r,illum,ang,litA,litB,darkFill){
   ctx.restore();
 }
 
-function drawVenus(ctx,a){
-  ctx.globalAlpha=a;
+function drawVenus(ctx,labelOp){
   const RV=12;                                  // เสี้ยวศุกร์จริง (เฟส 29% · ด้านสว่างชี้ดวงอาทิตย์)
   const halo=ctx.createRadialGradient(VX,VY,RV*0.5,VX,VY,RV*2.8);
   halo.addColorStop(0,'rgba(215,238,255,0.6)');halo.addColorStop(0.5,'rgba(150,195,255,0.18)');halo.addColorStop(1,'transparent');
   ctx.fillStyle=halo;ctx.beginPath();ctx.arc(VX,VY,RV*2.8,0,Math.PI*2);ctx.fill();
   drawPhase(ctx,VX,VY,RV,0.29,BRIGHT,'#bfe0ff','#ffffff','rgba(15,22,38,0.92)');
-  ctx.globalAlpha=1;
-  ctx.fillStyle='rgba(210,232,255,.95)';ctx.font='600 25px sans-serif';
-  ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText('ดาวศุกร์',VX+RV+14,VY);
+  if(labelOp>0.01){                             // ป้ายชื่อจางหายตอนจันทร์เข้าใกล้ (เกะกะสายตา)
+    ctx.globalAlpha=labelOp;
+    ctx.fillStyle='rgba(210,232,255,.95)';ctx.font='600 25px sans-serif';
+    ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText('ดาวศุกร์',VX+RV+14,VY);
+    ctx.globalAlpha=1;
+  }
 }
 
 function draw(canvas,frame){
@@ -70,9 +72,11 @@ function draw(canvas,frame){
   const MXc=VX+d*MOVE[0], MYc=VY+d*MOVE[1];
   const dist=Math.hypot(VX-MXc,VY-MYc);
   const occulted=dist<RM*0.98;
+  // ป้ายชื่อทั้งคู่จางหายเมื่อจันทร์เข้าใกล้ศุกร์ (กันเกะกะตรงจุดบัง) · ไกล>450=โชว์ · ใกล้<230=หาย
+  const labelOp=Math.max(0,Math.min(1,(dist-230)/220));
 
   // ดาวศุกร์ (วาดก่อน · ถ้าถูกบังให้จันทร์ทับ = ไม่เห็น)
-  if(!occulted) drawVenus(ctx,1);
+  if(!occulted) drawVenus(ctx,labelOp);
 
   // ── ดวงจันทร์เสี้ยว (เล็ก สมจริง) ──
   const earth=ctx.createRadialGradient(MXc,MYc,RM*0.2,MXc,MYc,RM);  // earthshine จานเต็มจางๆ
@@ -82,9 +86,11 @@ function draw(canvas,frame){
   mglow.addColorStop(0,'rgba(230,232,210,0.10)');mglow.addColorStop(1,'transparent');
   ctx.fillStyle=mglow;ctx.beginPath();ctx.arc(MXc,MYc,RM*1.6,0,Math.PI*2);ctx.fill();
   drawPhase(ctx,MXc,MYc,RM,ILLUM_M,BRIGHT,'#d7d9c6','#fdfdf4','rgba(18,22,34,0.0)');
-  if(MYc<HZ-RM&&MYc>RM){          // ป้ายจันทร์ (เฉพาะตอนอยู่ในจอ)
+  if(labelOp>0.01&&MYc<HZ-RM&&MYc>RM){   // ป้ายจันทร์ (ในจอ · จางหายตอนเข้าใกล้ศุกร์)
+    ctx.globalAlpha=labelOp;
     ctx.fillStyle='rgba(228,230,210,.85)';ctx.font='600 24px sans-serif';
     ctx.textAlign='center';ctx.textBaseline='top';ctx.fillText('ดวงจันทร์',MXc,MYc+RM+10);
+    ctx.globalAlpha=1;
   }
   // ── สถานะ (ตำแหน่งคงที่บนสุด) ──
   ctx.textAlign='center';ctx.textBaseline='alphabetic';
