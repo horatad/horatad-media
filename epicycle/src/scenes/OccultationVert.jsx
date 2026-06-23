@@ -110,11 +110,11 @@ function draw(canvas,frame){
     ctx.globalAlpha=1;
   }
 
-  // ── สถานะ (ตำแหน่งคงที่บนสุด) ──
+  // ── สถานะ (ใต้หัวข้อ · เหนือ caption ที่ย้ายมาบน) ──
   ctx.textAlign='center';ctx.textBaseline='alphabetic';
-  if(!aboveHZ){ctx.fillStyle='rgba(210,225,255,.7)';ctx.font='700 32px sans-serif';ctx.fillText('ทั้งคู่ลับขอบฟ้า — ศุกร์ยังถูกบัง',W/2,232);}
-  else if(occulted){ctx.fillStyle='#ff9a6a';ctx.font='700 40px sans-serif';ctx.fillText('● ดาวศุกร์ถูกบัง',W/2,232);}
-  else{ctx.fillStyle='rgba(210,232,255,.85)';ctx.font='700 34px sans-serif';ctx.fillText('ดวงจันทร์เคลื่อนเข้าหาดาวศุกร์',W/2,232);}
+  if(!aboveHZ){ctx.fillStyle='rgba(210,225,255,.72)';ctx.font='700 30px sans-serif';ctx.fillText('ทั้งคู่ลับขอบฟ้า — ศุกร์ยังถูกบัง',W/2,150);}
+  else if(occulted){ctx.fillStyle='#ff9a6a';ctx.font='700 34px sans-serif';ctx.fillText('● ดาวศุกร์ถูกบัง',W/2,150);}
+  else{ctx.fillStyle='rgba(210,232,255,.85)';ctx.font='700 30px sans-serif';ctx.fillText('ดวงจันทร์เคลื่อนเข้าหาดาวศุกร์',W/2,150);}
 
   // ── เส้นขอบฟ้า + เงาภูเขา (พื้นโลก) ──
   ctx.fillStyle='#05070e';
@@ -126,10 +126,8 @@ function draw(canvas,frame){
 
   // ── หัวข้อ (บนสุด) ──
   ctx.textAlign='center';ctx.textBaseline='alphabetic';
-  ctx.fillStyle='#cfe6ff';ctx.font='700 56px sans-serif';
-  ctx.fillText('ดวงจันทร์บังดาวศุกร์',W/2,118);
-  ctx.fillStyle='rgba(190,224,255,0.7)';ctx.font='600 28px Georgia,serif';
-  ctx.fillText('Lunar Occultation of Venus',W/2,162);
+  ctx.fillStyle='#cfe6ff';ctx.font='700 50px sans-serif';
+  ctx.fillText('ดวงจันทร์บังดาวศุกร์',W/2,96);
 }
 
 export function OccultationVert(){

@@ -5,8 +5,9 @@ import * as defaultTiming from './timing.js';
 const FONT = 'Tahoma, "Leelawadee UI", "Noto Sans Thai", sans-serif';
 const FADE = 8;
 
-// pos = 'bottom' (default · top:1410) หรือ 'top' (top:225 — เลี่ยงปุ่ม UI ของ Shorts ที่บังด้านล่าง)
-export function Caption({timing = defaultTiming, pos = 'bottom'} = {}) {
+// pos = 'top' (DEFAULT · top:225 — มาตรฐาน: เลี่ยงปุ่ม UI ของ Shorts ที่บังด้านล่าง · สั่ง 23 มิ.ย. 69)
+//       หรือ 'bottom' (top:1410 — ใช้เฉพาะคลิปที่บนแน่นจนวางไม่ได้)
+export function Caption({timing = defaultTiming, pos = 'top'} = {}) {
   const {SEG, capTo} = timing;
   const f = useCurrentFrame();
   const i = SEG.findIndex((s, idx) => f >= s.from && f < capTo(idx));
