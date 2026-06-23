@@ -1,35 +1,32 @@
 import {useCurrentFrame,AbsoluteFill,interpolate} from 'remotion';
 import {useRef,useLayoutEffect} from 'react';
-import {PLANETS,gP} from '../physics.js';
 import {Caption} from '../Caption.jsx';
 import {Narration} from '../Narration.jsx';
 import {Music} from '../Music.jsx';
 import {Credit} from '../Credit.jsx';
 import * as timing from '../timing-occult.js';
 
-// ── ดวงจันทร์บังดาวศุกร์ (Lunar Occultation of Venus) แนวตั้ง Shorts 1080×1920 ──
-// บน  = ภาพจากพื้นโลก (close-up): จันทร์เสี้ยวเคลื่อนไปบังดาวศุกร์เสี้ยว → หายวับ → โผล่
-// ล่าง = epicycle: ศุกร์เป็นดาววงใน โคจรรอบ(ทิศ)ดวงอาทิตย์ → เกาะติดดวงอาทิตย์เสมอ = เห็นแค่หัวค่ำ/เช้ามืด
+// ── ดวงจันทร์บังดาวศุกร์ — มุมมองเดียว: "ปรากฏการณ์ที่ตาเห็นจากพื้นโลก" ──
+// ท้องฟ้าหัวค่ำ ทิศตะวันตก (มีแสงสนธยา+เส้นขอบฟ้า) · จันทร์เสี้ยวใหญ่ + ดาวศุกร์เป็นจุดสว่างจิ๋ว
+// (สัดส่วนจริง ~1:50) · จันทร์เคลื่อนไปบังศุกร์ที่ขอบมืด → ศุกร์หายวับ → โผล่ที่ขอบสว่าง
+// ดาวศุกร์เสี้ยว = ภาพซูมกล้อง (inset) ช่วงท้าย · ไม่มีไดอะแกรม epicycle (กันคนงง)
 const W=1080,H=1920;
-const SUN=PLANETS.find(p=>p.id==='sun');
-const VENUS=PLANETS.find(p=>p.id==='venus');
-const STARS=Array.from({length:300},(_,i)=>({
-  x:(Math.sin(i*127.1)*.5+.5),y:(Math.sin(i*311.7)*.5+.5),
-  r:i%9===0?1.4:i%3===0?.7:.35,tw:i*0.41
+const MX=560,MY=700,RM=158;            // ดวงจันทร์
+const HZ=1652;                          // เส้นขอบฟ้า
+const ILLUM_M=0.22;                     // เสี้ยวจันทร์ (อ่อนๆ ~3 วัน)
+const BRIGHT=1.15;                       // ทิศด้านสว่าง (ชี้ดวงอาทิตย์ที่ลับขอบฟ้า ตะวันตก = ล่าง)
+const THETA=BRIGHT;                      // ศุกร์เดินเข้าหาขอบสว่าง (จากขอบมืดบน → ขอบสว่างล่าง)
+const SWEEP=300, P=815;
+const STARS=Array.from({length:240},(_,i)=>({
+  x:(Math.sin(i*127.1)*.5+.5),y:(Math.sin(i*311.7)*.5+.5)*0.84,
+  r:i%11===0?1.5:i%3===0?.7:.35,tw:i*0.41
 }));
 
-// ── close-up โซนบน ──
-const TX=540,TY=610,RM=150;            // จุดศูนย์กลาง + รัศมีดวงจันทร์
-const SWEEP=340, P=805;                 // ระยะกวาดของศุกร์ + คาบ (≈2.2 รอบใน 1770f)
-const ILLUM_M=0.20, ILLUM_V=0.30;       // เสี้ยว: จันทร์บาง · ศุกร์เสี้ยว
-const BRIGHT=0.70;                       // ทิศด้านสว่าง (ชี้ดวงอาทิตย์ที่ลับขอบฟ้า · ขวาล่าง)
-
-// วาดจาน + เฟสเสี้ยว (illum 0=มืดสนิท .5=ครึ่ง 1=เต็ม) · ang=ทิศด้านสว่าง
-function drawPhase(ctx,x,y,r,illum,ang,litA,litB){
-  const cosA=2*illum-1;                  // มุมเฟส
+// วาดจาน+เฟสเสี้ยว · ang=ทิศด้านสว่าง
+function drawPhase(ctx,x,y,r,illum,ang,litA,litB,darkFill){
+  const cosA=2*illum-1;
   ctx.save();ctx.translate(x,y);ctx.rotate(ang);
-  ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);
-  ctx.fillStyle='rgba(14,18,30,0.95)';ctx.fill();
+  ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.fillStyle=darkFill;ctx.fill();
   const xt=r*cosA;
   ctx.beginPath();
   ctx.arc(0,0,r,-Math.PI/2,Math.PI/2,false);
@@ -41,110 +38,92 @@ function drawPhase(ctx,x,y,r,illum,ang,litA,litB){
   ctx.restore();
 }
 
-function drawSky(ctx,frame){
-  // ดวงจันทร์ (เสี้ยว · ใหญ่)
-  const mGlow=ctx.createRadialGradient(TX,TY,RM*0.6,TX,TY,RM*1.8);
-  mGlow.addColorStop(0,'rgba(220,225,200,0.10)');mGlow.addColorStop(1,'transparent');
-  ctx.fillStyle=mGlow;ctx.beginPath();ctx.arc(TX,TY,RM*1.8,0,Math.PI*2);ctx.fill();
-  ctx.strokeStyle='rgba(150,160,150,0.18)';ctx.lineWidth=1;
-  ctx.beginPath();ctx.arc(TX,TY,RM,0,Math.PI*2);ctx.stroke();          // ขอบจานเต็ม (earthshine)
-  drawPhase(ctx,TX,TY,RM,ILLUM_M,BRIGHT,'#cfd2c0','#fbfbf2');
-
-  // ── ดาวศุกร์: กวาดผ่านหลังดวงจันทร์ (occultation) ──
-  const u=(frame%P)/P;                   // 0→1 ต่อรอบ
-  const vxRel=SWEEP*(1-2*u);             // +SWEEP(ขวา) → -SWEEP(ซ้าย)
-  const vx=TX+vxRel, vy=TY+vxRel*0.06;
-  const dist=Math.hypot(vx-TX,vy-TY);
-  const occulted=dist<RM*0.97;           // อยู่ในจานจันทร์ = ถูกบัง (มองไม่เห็น)
-  const edge=Math.max(0,Math.min(1,(SWEEP-Math.abs(vxRel))/90));  // จาง 2 ปลาย (ซ่อนการวาร์ป)
-
-  // เส้นทางเดินของศุกร์ (จุดประจาง)
-  ctx.strokeStyle='rgba(150,180,230,0.10)';ctx.lineWidth=1;ctx.setLineDash([3,10]);
-  ctx.beginPath();ctx.moveTo(TX-SWEEP,TY-SWEEP*0.06);ctx.lineTo(TX+SWEEP,TY+SWEEP*0.06);ctx.stroke();ctx.setLineDash([]);
-
-  if(!occulted&&edge>0.01){
-    const rv=14;
-    ctx.globalAlpha=edge;
-    const halo=ctx.createRadialGradient(vx,vy,0,vx,vy,rv*3.4);
-    halo.addColorStop(0,'rgba(230,244,255,0.85)');halo.addColorStop(0.4,'rgba(170,210,255,0.35)');halo.addColorStop(1,'transparent');
-    ctx.fillStyle=halo;ctx.beginPath();ctx.arc(vx,vy,rv*3.4,0,Math.PI*2);ctx.fill();
-    drawPhase(ctx,vx,vy,rv,ILLUM_V,BRIGHT,'#bfe0ff','#ffffff');
-    ctx.globalAlpha=1;
-    ctx.fillStyle='rgba(190,224,255,.95)';ctx.font='600 26px sans-serif';
-    ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText('ศุกร์',vx+rv+10,vy);
-  }
-  // ป้ายดวงจันทร์
-  ctx.fillStyle='rgba(225,228,205,.92)';ctx.font='600 30px sans-serif';
-  ctx.textAlign='center';ctx.textBaseline='top';ctx.fillText('ดวงจันทร์',TX,TY+RM+16);
-
-  // สถานะ (บัง / ใกล้)
-  ctx.textAlign='center';ctx.textBaseline='alphabetic';
-  if(occulted){ctx.fillStyle='#ff9a6a';ctx.font='700 40px sans-serif';ctx.fillText('● ดาวศุกร์ถูกบัง',TX,TY-RM-40);}
-  else{ctx.fillStyle='rgba(190,224,255,.85)';ctx.font='700 36px sans-serif';ctx.fillText('ดาวศุกร์กำลังเข้าใกล้',TX,TY-RM-40);}
-}
-
-// ── โซนล่าง: epicycle ศุกร์ (ดาววงใน เกาะติดดวงอาทิตย์) ──
-const EX=540,EY2=1255,SC2=1.9,SPEED2=2.4;
-function drawEpicycle(ctx,frame){
-  const f=frame*SPEED2, dr=Math.PI/180;
-  const defR=VENUS.defR*SC2, epiR=VENUS.epiR*SC2;
-  const ecx=EX, ecy=EY2-defR;            // ดวงอาทิตย์ตรึงด้านบน (ชี้ไปท้องฟ้าหัวค่ำ)
-  const ea=( -90 - VENUS.eS*f )*dr;
-  const vx=ecx+epiR*Math.cos(ea), vy=ecy+epiR*Math.sin(ea);
-
-  // เส้นโยง โลก→อาทิตย์ · วงเอพิไซเคิล
-  ctx.strokeStyle='rgba(255,170,70,.30)';ctx.lineWidth=1.4;
-  ctx.beginPath();ctx.moveTo(EX,EY2);ctx.lineTo(ecx,ecy);ctx.stroke();
-  ctx.strokeStyle='rgba(120,190,255,.30)';ctx.lineWidth=1.2;ctx.setLineDash([4,5]);
-  ctx.beginPath();ctx.arc(ecx,ecy,epiR,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
-  // เส้นเล็ง โลก→ศุกร์ (ต่อขึ้นไปท้องฟ้า)
-  ctx.strokeStyle='rgba(190,224,255,.45)';ctx.lineWidth=1.3;ctx.setLineDash([2,6]);
-  ctx.beginPath();ctx.moveTo(EX,EY2);ctx.lineTo(vx+(vx-EX)*0.18,vy+(vy-EY2)*0.18);ctx.stroke();ctx.setLineDash([]);
-
-  // โลก
-  const eR=12;
-  const eg=ctx.createRadialGradient(EX,EY2,0,EX,EY2,eR);eg.addColorStop(0,'#fff');eg.addColorStop(1,'#7ab0ff');
-  ctx.beginPath();ctx.arc(EX,EY2,eR,0,Math.PI*2);ctx.fillStyle=eg;ctx.fill();
-  ctx.fillStyle='rgba(190,215,255,.9)';ctx.font='600 22px sans-serif';
-  ctx.textAlign='center';ctx.textBaseline='top';ctx.fillText('โลก',EX,EY2+eR+5);
-  // ดวงอาทิตย์
-  const suR=20;ctx.shadowColor='#FF7733';ctx.shadowBlur=26;
-  const sg=ctx.createRadialGradient(ecx,ecy,0,ecx,ecy,suR);sg.addColorStop(0,'#FFE7A0');sg.addColorStop(1,'#FF5522');
-  ctx.beginPath();ctx.arc(ecx,ecy,suR,0,Math.PI*2);ctx.fillStyle=sg;ctx.fill();ctx.shadowBlur=0;
-  ctx.fillStyle='rgba(255,210,150,.9)';ctx.font='600 22px sans-serif';
-  ctx.textBaseline='bottom';ctx.fillText('ดวงอาทิตย์',ecx,ecy-suR-6);
-  // ศุกร์
-  ctx.beginPath();ctx.arc(vx,vy,7,0,Math.PI*2);ctx.fillStyle='#cfe6ff';ctx.fill();
-  ctx.fillStyle='rgba(190,224,255,.95)';ctx.font='600 21px sans-serif';
-  ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText('ศุกร์',vx+11,vy);
-  // คำอธิบาย
-  ctx.textAlign='center';ctx.textBaseline='top';
-  ctx.fillStyle='rgba(120,190,255,.92)';ctx.font='700 27px sans-serif';
-  ctx.fillText('ศุกร์ = ดาว "วงใน" โคจรเกาะติดดวงอาทิตย์',EX,EY2+44);
-  ctx.fillStyle='rgba(190,210,240,.7)';ctx.font='600 22px sans-serif';
-  ctx.fillText('จึงเห็นแค่หัวค่ำ–เช้ามืด · ใกล้ดวงอาทิตย์',EX,EY2+80);
-}
-
 function draw(canvas,frame){
   const ctx=canvas.getContext('2d');
-  ctx.fillStyle='#020a16';ctx.fillRect(0,0,W,H);
-  const vg=ctx.createRadialGradient(TX,TY,W*.1,TX,TY,W*.9);
-  vg.addColorStop(0,'transparent');vg.addColorStop(1,'rgba(0,0,12,.6)');
-  ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
+
+  // ── ท้องฟ้าสนธยา (มืดบน → ส้มอ่อนใกล้ขอบฟ้าตะวันตก) ──
+  const sky=ctx.createLinearGradient(0,0,0,HZ);
+  sky.addColorStop(0,'#03040f');sky.addColorStop(0.55,'#0a1430');
+  sky.addColorStop(0.82,'#243a63');sky.addColorStop(0.95,'#7a5a4e');sky.addColorStop(1,'#caa074');
+  ctx.fillStyle=sky;ctx.fillRect(0,0,W,HZ);
+  // ดาวพื้นหลัง (จางใกล้ขอบฟ้า)
   STARS.forEach(s=>{
-    ctx.globalAlpha=.06+Math.abs(Math.sin(s.tw+frame*.015))*.28;
-    ctx.fillStyle='#aaccff';ctx.beginPath();ctx.arc(s.x*W,s.y*H,s.r,0,Math.PI*2);ctx.fill();
+    const yy=s.y*HZ; const dim=Math.max(0,Math.min(1,(HZ-yy)/HZ*1.3));
+    ctx.globalAlpha=(.05+Math.abs(Math.sin(s.tw+frame*.015))*.26)*dim;
+    ctx.fillStyle='#cfe0ff';ctx.beginPath();ctx.arc(s.x*W,yy,s.r,0,Math.PI*2);ctx.fill();
   });ctx.globalAlpha=1;
 
-  drawSky(ctx,frame);
-  drawEpicycle(ctx,frame);
+  // ── ดาวศุกร์: จุดสว่างจิ๋ว (สัดส่วนจริง) เคลื่อนเข้าหาดวงจันทร์ ──
+  const u=(frame%P)/P;
+  const s=SWEEP*(2*u-1);                 // -SWEEP(ขอบมืดบน) → +SWEEP(ขอบสว่างล่าง)
+  const vx=MX+s*Math.cos(THETA), vy=MY+s*Math.sin(THETA);
+  const occulted=Math.abs(s)<RM*0.99;    // อยู่หลังจาน = ถูกบัง
+  const edge=Math.max(0,Math.min(1,(SWEEP-Math.abs(s))/70));
 
-  // หัวข้อ (บนสุด)
+  // ── ดวงจันทร์เสี้ยว (ใหญ่) ──
+  const earth=ctx.createRadialGradient(MX,MY,RM*0.2,MX,MY,RM);   // earthshine จานเต็มจางๆ
+  earth.addColorStop(0,'rgba(90,100,120,0.18)');earth.addColorStop(1,'rgba(50,58,78,0.05)');
+  ctx.fillStyle=earth;ctx.beginPath();ctx.arc(MX,MY,RM,0,Math.PI*2);ctx.fill();
+  const mglow=ctx.createRadialGradient(MX,MY,RM*0.7,MX,MY,RM*1.7);
+  mglow.addColorStop(0,'rgba(230,232,210,0.12)');mglow.addColorStop(1,'transparent');
+  ctx.fillStyle=mglow;ctx.beginPath();ctx.arc(MX,MY,RM*1.7,0,Math.PI*2);ctx.fill();
+  drawPhase(ctx,MX,MY,RM,ILLUM_M,BRIGHT,'#d7d9c6','#fdfdf4','rgba(18,22,34,0.0)');
+
+  // ดาวศุกร์ (จุดจ้า + ประกาย) — วาดหลังจันทร์: ถ้า occulted ไม่วาด
+  if(!occulted&&edge>0.01){
+    ctx.globalAlpha=edge;
+    const halo=ctx.createRadialGradient(vx,vy,0,vx,vy,22);
+    halo.addColorStop(0,'rgba(255,255,255,1)');halo.addColorStop(0.18,'rgba(225,240,255,0.9)');
+    halo.addColorStop(0.5,'rgba(150,195,255,0.32)');halo.addColorStop(1,'transparent');
+    ctx.fillStyle=halo;ctx.beginPath();ctx.arc(vx,vy,22,0,Math.PI*2);ctx.fill();
+    // ประกายกากบาท
+    ctx.strokeStyle='rgba(220,238,255,'+(0.5*edge).toFixed(2)+')';ctx.lineWidth=1.4;
+    ctx.beginPath();ctx.moveTo(vx-17,vy);ctx.lineTo(vx+17,vy);ctx.moveTo(vx,vy-17);ctx.lineTo(vx,vy+17);ctx.stroke();
+    ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(vx,vy,3.4,0,Math.PI*2);ctx.fill();
+    ctx.globalAlpha=1;
+    ctx.fillStyle='rgba(210,232,255,.95)';ctx.font='600 27px sans-serif';
+    ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText('ดาวศุกร์',vx+22,vy);
+  }
+  // ป้ายดวงจันทร์
+  ctx.fillStyle='rgba(228,230,210,.9)';ctx.font='600 30px sans-serif';
+  ctx.textAlign='center';ctx.textBaseline='top';ctx.fillText('ดวงจันทร์',MX,MY+RM+18);
+
+  // สถานะ บัง/เข้าใกล้ (เหนือดวงจันทร์)
   ctx.textAlign='center';ctx.textBaseline='alphabetic';
-  ctx.fillStyle='#bfe0ff';ctx.font='700 56px sans-serif';
-  ctx.fillText('ดวงจันทร์บังดาวศุกร์',540,120);
+  if(occulted){ctx.fillStyle='#ff9a6a';ctx.font='700 42px sans-serif';ctx.fillText('● ดาวศุกร์ถูกบัง',MX,MY-RM-46);}
+  else{ctx.fillStyle='rgba(210,232,255,.9)';ctx.font='700 36px sans-serif';ctx.fillText('ดาวศุกร์เคียงดวงจันทร์',MX,MY-RM-46);}
+
+  // ── ภาพซูมกล้อง (inset) ช่วง seg9 "ศุกร์เป็นเสี้ยว" ──
+  const insetOp=interpolate(frame,[1200,1225,1320,1345],[0,1,1,0],{extrapolateLeft:'clamp',extrapolateRight:'clamp'});
+  if(insetOp>0.01){
+    const ix=235,iy=1150,ir=128;
+    ctx.globalAlpha=insetOp;
+    // เส้นโยงจากศุกร์
+    if(!occulted){ctx.strokeStyle='rgba(200,225,255,.4)';ctx.lineWidth=1.2;ctx.setLineDash([4,5]);
+      ctx.beginPath();ctx.moveTo(vx,vy);ctx.lineTo(ix+ir*0.7,iy-ir*0.7);ctx.stroke();ctx.setLineDash([]);}
+    ctx.fillStyle='rgba(3,6,16,0.92)';ctx.beginPath();ctx.arc(ix,iy,ir,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='rgba(150,195,255,.6)';ctx.lineWidth=2;ctx.stroke();
+    drawPhase(ctx,ix,iy,ir*0.62,0.30,BRIGHT,'#bfe0ff','#ffffff','rgba(20,26,40,0.95)');  // ศุกร์เสี้ยวซูม
+    ctx.fillStyle='rgba(200,225,255,.95)';ctx.font='600 25px sans-serif';
+    ctx.textAlign='center';ctx.textBaseline='top';ctx.fillText('🔭 ศุกร์ผ่านกล้อง = เสี้ยว',ix,iy+ir+10);
+    ctx.globalAlpha=1;
+  }
+
+  // ── เส้นขอบฟ้า + เงาภูเขา (พื้นโลก) ──
+  ctx.fillStyle='#05070e';
+  ctx.beginPath();ctx.moveTo(0,HZ);
+  for(let x=0;x<=W;x+=30){const hh=HZ+22+Math.sin(x*0.013+1.7)*16+Math.sin(x*0.05)*7;ctx.lineTo(x,hh);}
+  ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();ctx.fill();
+  // ป้ายทิศ
+  ctx.fillStyle='rgba(255,225,180,.85)';ctx.font='700 30px sans-serif';
+  ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText('🧭 ทิศตะวันตก · หัวค่ำ (หลังอาทิตย์ตก)',W/2,HZ-12);
+
+  // ── หัวข้อ (บนสุด) ──
+  ctx.textAlign='center';ctx.textBaseline='alphabetic';
+  ctx.fillStyle='#cfe6ff';ctx.font='700 56px sans-serif';
+  ctx.fillText('ดวงจันทร์บังดาวศุกร์',W/2,118);
   ctx.fillStyle='rgba(190,224,255,0.7)';ctx.font='600 28px Georgia,serif';
-  ctx.fillText('Lunar Occultation of Venus',540,164);
+  ctx.fillText('Lunar Occultation of Venus',W/2,162);
 }
 
 export function OccultationVert(){
@@ -152,13 +131,12 @@ export function OccultationVert(){
   const ref=useRef(null);
   useLayoutEffect(()=>{if(!ref.current)return;const c=ref.current;c.width=W;c.height=H;draw(c,frame);},[frame]);
   const loopFade=interpolate(frame,[0,15,timing.DURATION-15,timing.DURATION],[0,1,1,0],{extrapolateLeft:'clamp',extrapolateRight:'clamp'});
-  // การ์ดเหตุการณ์ + เวลาสังเกตการณ์ (โผล่ช่วง intro ~5วิ · NARIT)
   const cardOp=interpolate(frame,[0,18,135,165],[0,1,1,0],{extrapolateLeft:'clamp',extrapolateRight:'clamp'});
-  return(<AbsoluteFill style={{background:'#020a16'}}>
+  return(<AbsoluteFill style={{background:'#03040f'}}>
     <AbsoluteFill style={{opacity:loopFade}}>
       <canvas ref={ref} style={{width:W,height:H,position:'absolute'}}/>
       <Caption timing={timing}/>
-      <Credit timing={timing} label="based on" source="EPICYCLE" sub="inner planet · Ptolemy"/>
+      <Credit timing={timing} label="based on" source="OBSERVATION" sub="ดวงจันทร์บังดาว · NARIT 2569"/>
     </AbsoluteFill>
     {cardOp>0.001&&(
       <AbsoluteFill style={{opacity:cardOp,justifyContent:'center',alignItems:'center',pointerEvents:'none'}}>
