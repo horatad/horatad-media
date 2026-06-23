@@ -13,11 +13,12 @@ import * as timing from '../timing-occult.js';
 // ท้องฟ้า: สนธยาสว่าง (หัวค่ำ) → มืดลงเรื่อยๆ ตามเวลา · จานจันทร์เล็กสมจริง · เสี้ยวศุกร์วาดจริง
 const W=1080,H=1920,HZ=1652,RM=88;
 const ILLUM_M=0.126, BRIGHT=0.80;       // เฟส/ทิศเสี้ยวจันทร์ (verified ephem)
-// ทิศตกจริง (ephem): ทั้งคู่เคลื่อน "ลงขวา ~72°" (az เพิ่ม=ขวา · alt ลด=ลง) เกือบขนานกัน
-const VX0=470,VY0=400;                   // ดาวศุกร์ ตำแหน่งเริ่ม (สูง · ต้นหัวค่ำ)
-const DRIFT=400, DESCENT=1200;           // ตกลงขวา ~72° (DESCENT/DRIFT=tan72) · ตกพร้อมกันทั้งคู่
-const MOVE=[0.71,0.71];                   // จันทร์คืบผ่านศุกร์เฉียง 45° (relative velocity จริง) · ขอบมืดบนซ้ายนำ→โผล่ขอบสว่างล่างขวา
-const RELD0=190,RELD1=190;               // กวาดสัมพัทธ์เล็ก (จริงจิ๋วมาก) → net จันทร์ยังลงขวา · บัง p≈0.27–0.73
+// ทิศตกจริง (ephem): ทั้งคู่เคลื่อน "ลงขวา ~72°" เกือบขนาน · ตกถึงขอบฟ้า (alt 0) ราว p≈0.92 แล้วจมใต้ขอบฟ้า
+const VX0=470,VY0=400;                   // ดาวศุกร์ ตำแหน่งเริ่ม (สูง · ต้นหัวค่ำ alt~17°)
+const DRIFT=442, DESCENT=1361;           // ตกลงขวา ~72° · ถึงขอบฟ้า(HZ)ที่ p≈0.92 → จมใต้ขอบฟ้าตอนจบ
+const MOVE=[0.71,0.71];                   // จันทร์คืบผ่านศุกร์เฉียง 45° (relative velocity จริง)
+// relD=251*(0.65−p): ศุกร์เห็น(เข้าใกล้) p<0.30 → ถูกบัง p>0.30 ค้างยาวจน "ตกลับขอบฟ้าทั้งที่ยังบัง" (ไม่โผล่กลับ · ตามจริงกรุงเทพ)
+const REL_K=251, REL_C=0.65;
 const STARS=Array.from({length:240},(_,i)=>({
   x:(Math.sin(i*127.1)*.5+.5),y:(Math.sin(i*311.7)*.5+.5)*0.86,
   r:i%11===0?1.5:i%3===0?.7:.35,tw:i*0.41
@@ -85,10 +86,11 @@ function draw(canvas,frame){
 
   // ── ตำแหน่ง: ทั้งคู่ตกลงขอบฟ้าด้วยกัน + จันทร์คืบผ่านศุกร์ ──
   const vx=VX0+DRIFT*p, vy=VY0+DESCENT*p;            // ดาวศุกร์ (เคลื่อนตามเวลา · ตกลงขอบฟ้า)
-  const relD=RELD0-(RELD0+RELD1)*p;                  // จันทร์เทียบศุกร์ (+ก่อน → -หลัง)
+  const relD=REL_K*(REL_C-p);                        // จันทร์เทียบศุกร์ (+ก่อน → -หลัง · บัง p>0.30)
   const mx=vx+relD*MOVE[0], my=vy+relD*MOVE[1];
   const dist=Math.hypot(vx-mx,vy-my);
   const occulted=dist<RM*0.92;                           // (ใช้กับ status เท่านั้น · การบังจริงทำด้วย clip)
+  const aboveHZ=my<HZ;                                    // ดวงจันทร์ยังเหนือขอบฟ้า (ยังไม่ตก)
   const labelOp=Math.max(0,Math.min(1,(dist-230)/220));  // ป้ายจางหายตอนเข้าใกล้
 
   drawVenus(ctx,vx,vy,mx,my,labelOp);                    // ศุกร์ถูกขอบจันทร์ clip บังทีละนิด (ไม่วับทันที)
@@ -110,7 +112,8 @@ function draw(canvas,frame){
 
   // ── สถานะ (ตำแหน่งคงที่บนสุด) ──
   ctx.textAlign='center';ctx.textBaseline='alphabetic';
-  if(occulted){ctx.fillStyle='#ff9a6a';ctx.font='700 40px sans-serif';ctx.fillText('● ดาวศุกร์ถูกบัง',W/2,232);}
+  if(!aboveHZ){ctx.fillStyle='rgba(210,225,255,.7)';ctx.font='700 32px sans-serif';ctx.fillText('ทั้งคู่ลับขอบฟ้า — ศุกร์ยังถูกบัง',W/2,232);}
+  else if(occulted){ctx.fillStyle='#ff9a6a';ctx.font='700 40px sans-serif';ctx.fillText('● ดาวศุกร์ถูกบัง',W/2,232);}
   else{ctx.fillStyle='rgba(210,232,255,.85)';ctx.font='700 34px sans-serif';ctx.fillText('ดวงจันทร์เคลื่อนเข้าหาดาวศุกร์',W/2,232);}
 
   // ── เส้นขอบฟ้า + เงาภูเขา (พื้นโลก) ──
@@ -151,8 +154,8 @@ export function OccultationVert(){
           <div style={{color:'#ffffff',fontSize:70,fontWeight:800,margin:'16px 0 6px'}}>ดวงจันทร์บังดาวศุกร์</div>
           <div style={{color:'#9fd0ff',fontSize:52,fontWeight:700}}>๑๔ กันยายน ๒๕๖๙</div>
           <div style={{color:'rgba(190,224,255,0.92)',fontSize:33,marginTop:26,lineHeight:1.5}}>
-            👁 เริ่มบัง <b>๑๙:๒๘ น.</b> — ศุกร์โผล่กลับ <b>๒๐:๓๔ น.</b><br/>
-            ทิศ <b>ตะวันตก</b> หัวค่ำ · ตาเปล่าเห็นทั่วไทย
+            👁 เริ่มบัง <b>๑๙:๒๘ น.</b> · ทิศ <b>ตะวันตก</b> หัวค่ำ<br/>
+            ทั้งคู่ <b>ลับขอบฟ้าขณะยังบังกัน</b> (~๒๐:๒๐) · ตาเปล่าทั่วไทย
           </div>
           <div style={{color:'rgba(255,255,255,0.55)',fontSize:26,marginTop:22,fontStyle:'italic'}}>ดวงจันทร์ใกล้ "กลืน" ดาวศุกร์ได้อย่างไร? ↓</div>
         </div>
