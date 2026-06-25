@@ -224,6 +224,6 @@ export function JupiterOccultVert(){
       </AbsoluteFill>
     )}
     <Narration timing={timing} voDir="vo-jupiter"/>
-    <Music timing={timing} music="audio/paganini-o-mamma-clip.mp3" gain={1.4} duck={0.26} creditAt={timing.CREDIT_AT}/>
+    <Music timing={timing} music="audio/paganini-o-mamma-clip.mp3" gain={1.0} duck={0.55} creditAt={timing.CREDIT_AT}/>
   </AbsoluteFill>);
 }
