@@ -21,6 +21,7 @@
 ## References
 - Shorts best practices (หลักการ 7-beat/hook): C:\horatad-media\SHORTS_BEST_PRACTICES.md
 - **Shorts production recipe + ค่าจริง (ต้นแบบมาตรฐาน `Shorts60`): C:\horatad-media\SHORTS_TEMPLATE.md** — ใช้ทำคลิป Shorts ถัดไปทุกตัว (script/voiceover/bgm/timing/caption/credit/epicycle props)
+  - **🎚️ มาตรฐานมิกซ์เสียง (§4 ใน SHORTS_TEMPLATE · ตั้ง 26 มิ.ย. วัดจาก jupiter-occult-vert):** เสียงคน vs เพลงเข้ากันทุกคลิป **ไม่ต้องจูนทีละตัว** → `cd epicycle && python normalize-clip-audio.py public/vo-<ชื่อ> public/audio/<เพลง>-clip.mp3` (vo+BGM เป็น −16 LUFS) แล้วตั้ง `<Music gain={1.0} duck={0.55}>` คงที่ (เพลงใต้พากย์ ~5dB) → verify `ffmpeg -af ebur128` (วัด ไม่ใช่ฟัง) · ดู memory `clip-audio-mix-standard`
 - **แล็บผลิตเพลงประกอบ (BGM): `clips\README.md`** — pipeline โน้ต→OMR(Audiveris)→MIDI→render soundfont (fluidsynth) · ⚠️ สคริปต์ hardcode path `clips\` ห้าม rename · master เก็บ Drive `horatad-media\_BGM-lab\` · เพลงที่ใช้จริงไป `epicycle\public\audio\`
 - **คลัง MIDI อ้างอิง: `media-sources\`** (แยกออกจาก clips 17 มิ.ย. 2569) — โฟลเดอร์นักประพันธ์ (mozart/beethoven/chopin ฯลฯ) + Media/others · แต่ละโฟลเดอร์มีดัชนี `index.html` (regen: `python _gen_media_index.py` ที่ราก) · git ignore (ของอ้างอิง) · ⚠️ clips\ ใช้เฉพาะ lab — reference ไม่ปนกัน
   - **กลยุทธ์ที่เก็บ (พี่ปีเตอร์ฟันธง 17 มิ.ย.): ตอนนี้เก็บ local C:\ ก่อน (ความเร็วตอนทดสอบ) · อนาคตย้าย master ขึ้น Google Drive** (`G:\My Drive\horatad-media\media-sources\` · backup + ไม่พึ่ง streaming ตอนทำงาน)

@@ -52,7 +52,22 @@
 
 ## 4. BGM / เสียงประกอบ
 - `Music.jsx` → ตัวแปร `MUSIC` ชี้ไฟล์ใน `public/`
-- **volume automation:** intro เต็ม `0.85` (5วิ) → duck `0.16` (ใต้ voiceover) → outro `0.80` → fade ปลาย
+- **volume automation:** intro เต็ม `0.85` (5วิ) → duck (ใต้ voiceover) → outro `0.80` → fade ปลาย
+
+### 🎚️ มาตรฐานมิกซ์เสียง "เสียงคน vs เพลง" — ทำทุกคลิป ไม่ต้องจูนทีละตัว (วัดจาก jupiter-occult-vert 26 มิ.ย. 2569)
+> ⚠️ **ใช้กับคลิปถัดไปเท่านั้น** · คลิปที่ลง YouTube ไปแล้ว = แก้ไม่ได้/ไม่ต้องแตะ (อย่าไล่ re-mix ของเก่า)
+> เป้าหมาย: ทุกคลิปเสียงพากย์เด่น เพลงหนุนใต้เท่ากันหมด — render แล้ว drop ลง timeline ได้เลย ไม่ต้องฟังจูน
+> **สูตร = normalize ต้นทางให้เท่ากัน แล้ว gain/duck เป็นค่าคงที่** (เลิกจูน gain 1.3–1.7/duck 0.26–0.30 ต่อคลิปแบบเดิม)
+
+1. **normalize ต้นทางทุกไฟล์เป็น −16 LUFS** (เสียงพากย์ vo + BGM clip) — คำสั่งเดียว:
+   `cd epicycle && python normalize-clip-audio.py public/vo-<ชื่อ> public/audio/<เพลง>-clip.mp3`
+   (มาตรฐาน LUFS เดียวกับคลัง [My favorite](My favorite/index.html) · two-pass loudnorm linear · TP −1.5)
+2. **ตั้ง props คงที่ใน `<Music>`:** `gain={1.0}` `duck={0.55}`
+   → ช่วงพากย์ เพลงอยู่ **~5 dB ใต้เสียงคน** (สมดุลเดียวกับ jupiter-occult) · intro/outro เพลงเด่นเต็ม
+3. **verify ด้วยการวัด (ไม่ใช่ฟัง):** หลัง render → `ffmpeg -i <out>.mp4 -af ebur128 -f null /dev/null 2>&1 | grep "I:"`
+   - คลิปรวม ≈ **−16 LUFS** (ดังกว่า reference เดิม −24.8 = ดีขึ้น YouTube เป้า −14) · ช่วงพากย์เสียงคนต้องเด่นกว่าเพลง ~5 dB
+   - เพี้ยนจากนี้ค่อยขยับ `duck` ทีละ 0.05 (เพลงดังไป↓ · จมไป↑) — แต่ปกติไม่ต้องแตะ
+- **ค่าอ้างอิงที่วัดได้ (reference jupiter-occult):** vo −25.5 LUFS · BGM clip −21.6 · gain 1.4 duck 0.26 → คลิปรวม −24.8 LUFS · เพลงใต้พากย์ −5 dB (มาตรฐานใหม่ปรับ baseline ให้ดังขึ้น+คงที่ แต่สมดุลเท่าเดิม)
 - **royalty-free** (Pixabay / YouTube Audio Library — ฟรี ไม่ต้องเครดิต) · ต้นแบบ demo = `shostakovich-waltz2-loop.wav`
 - คลิป < 60วิ ใช้เพลงลิขสิทธิ์ได้ (YouTube ไม่ block · อาจ Content ID claim ถ้า monetize → ค่อยสลับ royalty-free)
 - **กลยุทธ์เพลง (ตั้ง 15 มิ.ย. 2569):** ช่องมี "signature เสียง" = **voiceover เสียง Niwat คงที่ทุกคลิป** → bgm จึง **เปลี่ยนตาม mood เรื่องได้** แต่**คุมแนวให้ consistent** (classical/orchestral/cinematic — อย่าหลุดไป EDM/ป๊อป) เพื่อยังรู้สึกเป็นช่องเดียวกัน:
@@ -108,9 +123,9 @@
 1. เขียนบท 7-beat → ใส่ `gen-vo.py` SEGMENTS (เสียง) + `timing.js` TEXT (caption)
 2. `python gen-vo.py` → วัด duration ทุก seg → อัปเดต `DUR[]` ใน timing.js
 3. ปรับ `BEATS` (map index segment → title hook/lineage/twist)
-4. เลือกเพลง royalty-free → วาง `public/` → แก้ `MUSIC` ใน Music.jsx
+4. เลือกเพลง → วาง `public/audio/` → แก้ `MUSIC` ใน Music.jsx · **มิกซ์เสียงตามมาตรฐาน §4:** `python normalize-clip-audio.py public/vo-<ชื่อ> public/audio/<เพลง>-clip.mp3` แล้วตั้ง `<Music gain={1.0} duck={0.55}>` (ไม่ต้องจูนทีละคลิป)
 5. ปรับ scene bg (ถ้าเปลี่ยนจาก epicycle) หรือ props FullEpicycle
 6. render: `cd epicycle && node setup5.js --render`
 7. **ตรวจ still ทุก beat** (hook/lineage/twist/credit) → ปรับ → render เต็ม
-8. คุม ≤58วิ (1740 เฟรม) · ตรวจ audio **ของไฟล์ที่จะอัปจริง** (`ffmpeg -i x.mp4 -af volumedetect` → mean ≈ -25dB = มีเสียง · -91dB = แทร็กเปล่า เงียบ อย่าอัป)
+8. คุม ≤58วิ (1740 เฟรม) · **ตรวจ audio ของไฟล์ที่จะอัปจริง** ตามมาตรฐาน §4: `ffmpeg -i x.mp4 -af ebur128 -f null /dev/null 2>&1 | grep "I:"` → คลิปรวม ≈ **−16 LUFS** (ทำตามสูตร normalize+gain/duck แล้ว) · ถ้าได้ −91dB/เงียบ = แทร็กเปล่า อย่าอัป
 9. **เขียน script โพสต์ FB/YT (.docx) คู่ทุกคลิป** — ดู §8 · `gen-docx-X.mjs` → วาง FB-output (ทำเองได้เลย ไม่ต้องรอสั่ง)
