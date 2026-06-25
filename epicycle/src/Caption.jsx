@@ -7,14 +7,14 @@ const FADE = 8;
 
 // pos = 'top' (DEFAULT · top:225 — มาตรฐาน: เลี่ยงปุ่ม UI ของ Shorts ที่บังด้านล่าง · สั่ง 23 มิ.ย. 69)
 //       หรือ 'bottom' (top:1410 — ใช้เฉพาะคลิปที่บนแน่นจนวางไม่ได้)
-export function Caption({timing = defaultTiming, pos = 'top'} = {}) {
+export function Caption({timing = defaultTiming, pos = 'top', topY = null} = {}) {
   const {SEG, capTo} = timing;
   const f = useCurrentFrame();
   const i = SEG.findIndex((s, idx) => f >= s.from && f < capTo(idx));
   if (i < 0) return null;
   const seg = SEG[i];
   const to = capTo(i);
-  const yTop = pos === 'top' ? 225 : 1410;
+  const yTop = topY != null ? topY : (pos === 'top' ? 225 : 1410);   // topY override ตำแหน่ง (default เดิม)
   const opacity = interpolate(f, [seg.from, seg.from + FADE, to - FADE, to], [0, 1, 1, 0],
     {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
   return (

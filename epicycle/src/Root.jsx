@@ -15,6 +15,7 @@ import {TwoSystemsVert} from './scenes/TwoSystemsVert.jsx';
 import {MoonPhaseVert} from './scenes/MoonPhaseVert.jsx';
 import {VenusPhaseVert} from './scenes/VenusPhaseVert.jsx';
 import {VenusBrightestVert} from './scenes/VenusBrightestVert.jsx';
+import {VenusBrightVert} from './scenes/VenusBrightVert.jsx';
 import {OppositionVert} from './scenes/OppositionVert.jsx';
 import {EclipseStoryVert} from './scenes/EclipseStoryVert.jsx';
 import {OccultationVert} from './scenes/OccultationVert.jsx';
@@ -39,6 +40,7 @@ export const RemotionRoot=()=>(
     <Composition id="MoonPhaseVert" component={MoonPhaseVert} durationInFrames={1770} fps={30} width={1080} height={1920}/>
     <Composition id="VenusPhaseVert" component={VenusPhaseVert} durationInFrames={1770} fps={30} width={1080} height={1920}/>
     <Composition id="VenusBrightestVert" component={VenusBrightestVert} durationInFrames={1770} fps={30} width={1080} height={1920}/>
+    <Composition id="VenusBrightVert" component={VenusBrightVert} durationInFrames={1770} fps={30} width={1080} height={1920}/>
     <Composition id="OppositionVert" component={OppositionVert} durationInFrames={1770} fps={30} width={1080} height={1920}/>
     <Composition id="EclipseStoryVert" component={EclipseStoryVert} durationInFrames={1770} fps={30} width={1080} height={1920}/>
     <Composition id="OccultationVert" component={OccultationVert} durationInFrames={1770} fps={30} width={1080} height={1920}/>
