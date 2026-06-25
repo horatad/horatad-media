@@ -102,3 +102,5 @@ desktop.ini
 credentials.json
 service-account*.json
 *creds*.txt
+__pycache__/
+epicycle/public/vo_f5/
