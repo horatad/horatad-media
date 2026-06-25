@@ -42,9 +42,7 @@ const MOON_R_ARCMIN=16.09, ILLUM_M=0.388;
 const RM=116;                                // จานจันทร์วาด (ขยาย · disk convention) → สเกล px/arcmin
 const PXPM=RM/MOON_R_ARCMIN;                 // px ต่อ arcmin (จันทร์+offset พฤหัส = สเกลเดียว = สัดส่วนจริง)
 const RJ=15;                                 // จานพฤหัส (ขยายให้เห็น · จริง 36"=เล็กมาก · exception)
-// บริวารกาลิเลโอ ๔ ดวง (ระยะ arcmin โดยประมาณ · เรียงแนวระนาบศูนย์สูตร ≈ เอียงเล็กน้อย)
-const MOONS=[{a:-9.6,r:3.0},{a:-5.4,r:3.4},{a:5.9,r:3.8},{a:10.8,r:2.8}];
-const SAT_TILT=-0.20;
+// (ไม่วาดดวงจันทร์กาลิเลโอ — ตาเปล่ามองไม่เห็น · ดู drawJupiter)
 // แกนมุมเงย (°เหนือขอบฟ้า) — โซนเหตุการณ์ alt 40-66°
 const HZ=1684;                               // เส้นขอบฟ้า (ทิศตะวันออก)
 function altToY(alt){return interpolate(alt,[36,68],[1556,470],{extrapolateLeft:'clamp',extrapolateRight:'clamp'});}
@@ -84,9 +82,8 @@ function drawPhase(ctx,x,y,r,illum,ang,litA,litB,darkFill){
 function drawJupiter(ctx,jx,jy,mx,my,labelOp){
   ctx.save();
   ctx.beginPath();ctx.rect(0,0,W,H);ctx.arc(mx,my,RM,0,Math.PI*2);ctx.clip('evenodd');  // ลับหลังจานจันทร์
-  const cs=Math.cos(SAT_TILT),sn=Math.sin(SAT_TILT);
-  ctx.fillStyle='rgba(245,240,222,0.95)';
-  MOONS.forEach(s=>{const d=s.a*PXPM;ctx.beginPath();ctx.arc(jx+d*cs,jy+d*sn,s.r,0,Math.PI*2);ctx.fill();});
+  // หมายเหตุ: ไม่วาดดวงจันทร์กาลิเลโอ — ตาเปล่ามองไม่เห็น (glare พฤหัสกลบ · ห่างแค่ 0.1–6.6′ · ต้องกล้อง)
+  //   พากย์/caption ยังเล่า "ถ้าส่องกล้องเห็นบริวาร ๔ ดวง" ได้ (ซื่อตรง: บอกว่าต้องกล้อง · กาลิเลโอ 1610)
   const halo=ctx.createRadialGradient(jx,jy,RJ*0.5,jx,jy,RJ*2.6);
   halo.addColorStop(0,'rgba(255,240,210,0.5)');halo.addColorStop(0.5,'rgba(240,205,150,0.15)');halo.addColorStop(1,'transparent');
   ctx.fillStyle=halo;ctx.beginPath();ctx.arc(jx,jy,RJ*2.6,0,Math.PI*2);ctx.fill();
