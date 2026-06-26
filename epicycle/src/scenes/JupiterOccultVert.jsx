@@ -160,9 +160,6 @@ function draw(canvas,frame){
   //   → ไม่เป็นจานน้ำเงินทึบมากัดพฤหัส · ยังเห็นเค้าจานรางๆ ให้พฤหัสโผล่จากขอบมืดได้ make sense
   //   จันทร์ (รวมด้านมืด=หินทึบแสง) บังพฤหัสจริง → ขณะโผล่ พฤหัสไม่เต็มดวง ถูกขอบเผยออกทีละนิด
   drawPhase(ctx,mx,my,RM,ILLUM_M,brightAng,'#d9dbc8','#fdfdf4','rgba(18,23,40,0.28)');
-  // เส้นขอบจานจันทร์ด้านมืดจางมาก — บอกตำแหน่ง "ขอบ" ที่พฤหัสโผล่ออก โดยไม่เป็นจานทึบ
-  ctx.save();ctx.strokeStyle='rgba(110,126,168,0.16)';ctx.lineWidth=1.4;
-  ctx.beginPath();ctx.arc(mx,my,RM,0,Math.PI*2);ctx.stroke();ctx.restore();
   if(labelOp>0.01){
     ctx.globalAlpha=labelOp;ctx.fillStyle='rgba(230,232,212,.9)';ctx.font='600 24px sans-serif';
     ctx.textAlign='right';ctx.textBaseline='middle';ctx.fillText('ดวงจันทร์',mx-RM-12,my);ctx.globalAlpha=1;
