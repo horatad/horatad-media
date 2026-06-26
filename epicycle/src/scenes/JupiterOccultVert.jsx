@@ -156,9 +156,10 @@ function draw(canvas,frame){
   const mglow=ctx.createRadialGradient(mx,my,RM*0.7,mx,my,RM*1.5);
   mglow.addColorStop(0,'rgba(225,228,210,0.10)');mglow.addColorStop(1,'transparent');
   ctx.fillStyle=mglow;ctx.beginPath();ctx.arc(mx,my,RM*1.5,0,Math.PI*2);ctx.fill();
-  // ด้านมืดของจันทร์เสี้ยว = โปร่งใส (กลืนฟ้ามืดตามจริง) → ไม่เป็น "จานเงา" บังพฤหัสตอนโผล่
-  //   การบังยังถูกต้อง (clip จานเต็มใน drawJupiter) · พฤหัสค่อยๆ โผล่จากขอบมืดเข้าหาฟ้ามืด
-  drawPhase(ctx,mx,my,RM,ILLUM_M,brightAng,'#d9dbc8','#fdfdf4','rgba(24,28,40,0)');
+  // ด้านมืดของจันทร์เสี้ยว = แสงโลก (earthshine "the old moon in the new moon's arms") จางๆ
+  //   → เห็นจานจันทร์เต็มดวงรางๆ เหนือฟ้ามืด ทำให้ "พฤหัสลับ/โผล่หลังจานจันทร์" make sense
+  //   (ก่อนหน้านี้ทำโปร่งใส → พฤหัสโผล่ลอยในฟ้าว่าง ดูไม่ออกว่าอยู่หลังจันทร์)
+  drawPhase(ctx,mx,my,RM,ILLUM_M,brightAng,'#d9dbc8','#fdfdf4','rgba(34,40,62,0.92)');
   if(labelOp>0.01){
     ctx.globalAlpha=labelOp;ctx.fillStyle='rgba(230,232,212,.9)';ctx.font='600 24px sans-serif';
     ctx.textAlign='right';ctx.textBaseline='middle';ctx.fillText('ดวงจันทร์',mx-RM-12,my);ctx.globalAlpha=1;
