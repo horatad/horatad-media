@@ -19,12 +19,16 @@ export function Music({timing = defaultTiming, music = 'audio/shostakovich-waltz
   const fadeEnd = DURATION - outroSilence;            // เพลง fade ลง 0 ที่นี่ แล้วเงียบจนจบคลิป
   const cAt = creditAt != null ? creditAt : VO_END + 150;  // credit ขึ้น (ตรงกับ Credit.jsx)
   const cDuck = Math.min(cAt + 30, fadeEnd - 5);      // หรี่ลงเสร็จภายใน ~1วิ หลัง credit ขึ้น
-  const base = interpolate(
-    f,
-    [0, introFade, INTRO_FRAMES, INTRO_FRAMES + 20, VO_END, VO_END + 30, cAt, cDuck, fadeEnd],
-    [0, 0.85, 0.85, duck, duck, 0.80, 0.80, creditLevel, 0],
-    {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'}
-  );
+  // credit ขึ้นก่อนพากย์จบ (จอว่างปลายคลิป เช่น ดาวจมขอบฟ้า) → เพลงหรี่เลย ไม่ดันขึ้น outro swell
+  const base = cAt < VO_END
+    ? interpolate(f,
+        [0, introFade, INTRO_FRAMES, INTRO_FRAMES + 20, cAt, cDuck, fadeEnd],
+        [0, 0.85, 0.85, duck, duck, creditLevel, 0],
+        {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'})
+    : interpolate(f,
+        [0, introFade, INTRO_FRAMES, INTRO_FRAMES + 20, VO_END, VO_END + 30, cAt, cDuck, fadeEnd],
+        [0, 0.85, 0.85, duck, duck, 0.80, 0.80, creditLevel, 0],
+        {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
   const vol = Math.min(base * gain, 1.0);             // clamp กันเกิน 1.0 (แตก)
   return <Audio src={staticFile(MUSIC)} loop volume={vol} />;
 }
